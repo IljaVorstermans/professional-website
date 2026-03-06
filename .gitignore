@@ -1,0 +1,23 @@
+# Claude Code
+.claude/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Node (for when we add a backend/framework)
+node_modules/
+.env
+.env.local
+
+# Build output
+dist/
+.next/
+out/

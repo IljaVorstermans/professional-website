@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How's your relationship with Big Tech?</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg:           #0F172A;
+            --surface:      #1E293B;
+            --border:       #334155;
+            --border-hover: #475569;
+            --text:         #E5E7EB;
+            --muted:        #94A3B8;
+            --accent:       #2563EB;
+            --accent-bg:    rgba(37, 99, 235, 0.12);
+            --score:        #22C55E;
+            --font-body:    'Inter', system-ui, sans-serif;
+            --font-heading: 'Space Grotesk', system-ui, sans-serif;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: var(--font-body);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+
+        .progress-bar {
+            position: fixed;
+            top: 0; left: 0;
+            height: 3px;
+            background: var(--accent);
+            transition: width 0.5s ease;
+            z-index: 100;
+        }
+
+        .screen {
+            width: 100%;
+            max-width: 600px;
+            display: none;
+        }
+
+        .screen.active {
+            display: flex;
+            flex-direction: column;
+            animation: fadeUp 0.35s ease;
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(14px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ── Landing ── */
+        .label {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: 20px;
+        }
+
+        .landing-title {
+            font-family: var(--font-heading);
+            font-size: clamp(28px, 5vw, 44px);
+            font-weight: 700;
+            line-height: 1.15;
+            letter-spacing: -0.025em;
+            margin-bottom: 16px;
+        }
+
+        .landing-sub {
+            font-size: 16px;
+            color: var(--muted);
+            line-height: 1.65;
+            margin-bottom: 40px;
+        }
+
+        .btn-primary {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--accent);
+            color: #000;
+            font-weight: 700;
+            font-size: 15px;
+            padding: 14px 28px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            align-self: flex-start;
+            transition: opacity 0.15s;
+        }
+        .btn-primary:hover { opacity: 0.88; }
+
+        /* ── Level chips ── */
+        .level-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 20px; }
+        .level-chip { font-size: 12px; font-weight: 500; padding: 5px 13px; border-radius: 99px; border: 1px solid var(--accent); color: var(--muted); background: rgba(37, 99, 235, 0.06); }
+
+        /* ── Question ── */
+        .q-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+        .btn-back { background: none; border: none; color: var(--muted); font-size: 13px; font-weight: 500; cursor: pointer; padding: 0; opacity: 0; pointer-events: none; transition: opacity 0.15s, color 0.15s; font-family: var(--font-body); }
+        .btn-back.visible { opacity: 1; pointer-events: auto; }
+        .btn-back:hover { color: var(--text); }
+
+        .q-meta {
+            font-size: 12px;
+            font-weight: 500;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--muted);
+        }
+
+        .q-text {
+            font-family: var(--font-heading);
+            font-size: clamp(20px, 3.5vw, 27px);
+            font-weight: 600;
+            line-height: 1.3;
+            letter-spacing: -0.015em;
+            margin-bottom: 28px;
+        }
+
+        .q-hint {
+            font-size: 12px;
+            color: var(--muted);
+            margin-bottom: 14px;
+            margin-top: -18px;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 9px;
+        }
+
+        .option {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 15px 18px;
+            font-size: 15px;
+            color: var(--text);
+            cursor: pointer;
+            text-align: left;
+            line-height: 1.45;
+            transition: border-color 0.12s, background 0.12s, transform 0.1s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .option:hover { border-color: var(--border-hover); background: #1c1c20; }
+        .option.selected { border-color: var(--accent); background: var(--accent-bg); }
+        .option:active { transform: scale(0.99); }
+
+        .check {
+            width: 18px;
+            height: 18px;
+            border-radius: 4px;
+            border: 1.5px solid var(--border);
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: border-color 0.12s, background 0.12s;
+        }
+        .option.selected .check {
+            background: var(--accent);
+            border-color: var(--accent);
+        }
+        .check-tick {
+            display: none;
+            width: 10px;
+            height: 10px;
+        }
+        .option.selected .check-tick { display: block; }
+
+        .btn-continue {
+            margin-top: 16px;
+            background: var(--accent);
+            color: #000;
+            font-weight: 700;
+            font-size: 15px;
+            padding: 14px 28px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            align-self: flex-start;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+        }
+        .btn-continue.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .btn-continue:hover { opacity: 0.88; }
+
+        /* ── Results ── */
+        .result-label { font-size: 11px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); margin-bottom: 10px; }
+
+        .result-title {
+            font-family: var(--font-heading);
+            font-size: clamp(38px, 9vw, 60px);
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            line-height: 1.05;
+            margin-bottom: 6px;
+        }
+
+        .result-score { font-size: 17px; color: var(--muted); margin-bottom: 28px; }
+
+        .score-bar-bg {
+            width: 100%;
+            height: 5px;
+            background: var(--border);
+            border-radius: 99px;
+            overflow: hidden;
+            margin-bottom: 36px;
+        }
+
+        .score-bar-fill {
+            height: 100%;
+            background: var(--score);
+            border-radius: 99px;
+            width: 0%;
+            transition: width 1.1s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .result-desc { font-size: 16px; color: var(--muted); line-height: 1.7; margin-bottom: 36px; }
+
+        .breakdown-tabs { display: flex; gap: 6px; margin-bottom: 14px; }
+        .breakdown-tab {
+            font-size: 12px; font-weight: 600; letter-spacing: 0.06em;
+            padding: 5px 14px; border-radius: 99px;
+            border: 1px solid var(--border); background: transparent;
+            color: var(--muted); cursor: pointer;
+            transition: border-color 0.15s, color 0.15s, background 0.15s;
+        }
+        .breakdown-tab.active { border-color: var(--accent); color: var(--accent); background: var(--accent-bg); }
+        .breakdown-tab:hover:not(.active) { border-color: var(--border-hover); color: var(--text); }
+
+        .breakdown { display: flex; flex-direction: column; gap: 11px; margin-bottom: 36px; }
+
+        .breakdown-row { display: flex; align-items: center; gap: 12px; font-size: 13px; }
+        .breakdown-bar-col { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+        .breakdown-desc { font-size: 11px; color: var(--muted); opacity: 0.75; }
+        .breakdown-dim { color: var(--muted); width: 130px; flex-shrink: 0; }
+        .breakdown-track { height: 4px; background: var(--border); border-radius: 99px; overflow: hidden; }
+        .breakdown-fill { height: 100%; background: var(--accent); border-radius: 99px; opacity: 0.65; }
+        .breakdown-pct { color: var(--muted); width: 34px; text-align: right; flex-shrink: 0; }
+
+        .email-box {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 22px;
+            margin-bottom: 14px;
+        }
+
+        .email-box-title { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+        .email-box-sub { font-size: 13px; color: var(--muted); margin-bottom: 16px; }
+
+        .email-row { display: flex; gap: 8px; }
+
+        .email-input {
+            flex: 1;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 11px 15px;
+            font-size: 14px;
+            color: var(--text);
+            outline: none;
+            transition: border-color 0.15s;
+        }
+        .email-input:focus { border-color: var(--accent); }
+        .email-input::placeholder { color: var(--muted); }
+
+        .btn-send {
+            background: var(--accent);
+            color: #000;
+            font-weight: 700;
+            font-size: 14px;
+            padding: 11px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: opacity 0.15s;
+        }
+        .btn-send:hover { opacity: 0.88; }
+
+        .btn-retake {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--muted);
+            font-size: 13px;
+            padding: 10px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            align-self: flex-start;
+            transition: border-color 0.15s, color 0.15s;
+        }
+        .btn-retake:hover { border-color: var(--border-hover); color: var(--text); }
+
+        /* ── Pillar donuts ── */
+        @property --pct { syntax: '<number>'; inherits: false; initial-value: 0; }
+        .pillar-donuts { display: flex; justify-content: space-between; gap: 8px; margin-bottom: 20px; }
+        .pillar-donut { display: flex; flex-direction: column; align-items: center; gap: 8px; flex: 1; min-width: 0; }
+        .pillar-ring { width: 60px; height: 60px; border-radius: 50%; background: conic-gradient(var(--accent) calc(var(--pct) * 1%), var(--border) 0%); display: flex; align-items: center; justify-content: center; position: relative; flex-shrink: 0; transition: --pct 1s cubic-bezier(0.16, 1, 0.3, 1); }
+        .pillar-ring::after { content: ''; position: absolute; width: 42px; height: 42px; border-radius: 50%; background: var(--bg); }
+        .pillar-pct { position: relative; z-index: 1; font-size: 11px; font-weight: 700; color: var(--text); }
+        .pillar-label { font-size: 10px; font-weight: 500; color: var(--muted); text-align: center; line-height: 1.3; }
+
+        /* ── Section labels ── */
+        .section-label { font-size: 11px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); margin-bottom: 14px; }
+
+        /* ── Recommendations ── */
+        #rRecs { margin-bottom: 36px; }
+        .recs-label { font-size: 11px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); margin-bottom: 14px; }
+        .rec-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 18px 20px; margin-bottom: 10px; }
+        .rec-card:last-child { margin-bottom: 0; }
+        .rec-card-top { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-bottom: 7px; }
+        .rec-card-title { font-size: 15px; font-weight: 600; color: var(--text); }
+        .rec-effort { font-size: 11px; font-weight: 500; color: var(--muted); white-space: nowrap; flex-shrink: 0; }
+        .rec-card-desc { font-size: 13px; color: var(--muted); line-height: 1.6; margin-bottom: 12px; }
+        .rec-action { display: inline-flex; align-items: center; gap: 5px; font-size: 13px; font-weight: 600; color: var(--accent); text-decoration: none; transition: opacity 0.15s; }
+        .rec-action:hover { opacity: 0.75; }
+    </style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar" style="width:0%"></div>
+
+<!-- Landing -->
+<div class="screen active" id="screen-landing">
+    <div class="label">Digital Autonomy Quiz</div>
+    <h1 class="landing-title">How's your relationship with Big Tech?</h1>
+    <div class="level-chips">
+        <span class="level-chip">In Denial</span>
+        <span class="level-chip">It's Complicated</span>
+        <span class="level-chip">Taking Space</span>
+        <span class="level-chip">Moving On</span>
+        <span class="level-chip">New Love</span>
+    </div>
+    <p class="landing-sub">Find out if you're in denial or close to finding new love in under two minutes. No account required.</p>
+    <button class="btn-primary" onclick="startQuiz()">Find out →</button>
+</div>
+
+<!-- Question -->
+<div class="screen" id="screen-question">
+    <div class="q-nav">
+        <button class="btn-back" id="btnBack" onclick="back()">← Back</button>
+        <div class="q-meta" id="qMeta"></div>
+    </div>
+    <div class="q-text" id="qText"></div>
+    <div class="q-hint" id="qHint"></div>
+    <div class="options" id="qOptions"></div>
+    <button class="btn-continue" id="btnContinue" onclick="advance()">Continue →</button>
+</div>
+
+<!-- Result -->
+<div class="screen" id="screen-result">
+    <div class="result-label">Your relationship status</div>
+    <div class="result-title" id="rTitle"></div>
+    <div class="result-score" id="rScore"></div>
+    <div class="score-bar-bg"><div class="score-bar-fill" id="rBar"></div></div>
+    <div class="result-desc" id="rDesc"></div>
+    <div class="section-label">What</div>
+    <div id="rPillarDonuts" class="pillar-donuts"></div>
+    <div class="section-label">Where</div>
+    <div id="rBreakdownWhere" class="breakdown"></div>
+    <div id="rRecs"></div>
+    <div class="email-box">
+        <div class="email-box-title">Get your personalised roadmap</div>
+        <div class="email-box-sub">We'll send you specific next steps based on your answers.</div>
+        <div class="email-row">
+            <input class="email-input" type="email" placeholder="your@email.com" id="emailInput">
+            <button class="btn-send">Send it</button>
+        </div>
+    </div>
+    <button class="btn-retake" onclick="retake()">Retake the quiz</button>
+</div>
+
+<script>
+// Each opt has explicit { text, score } — score 0 (least autonomous) to 3 (most autonomous)
+// multi: true  = select all that apply, score = highest selected score
+// multi: false = single select, auto-advance
+// hint: optional line shown below the question text
+// pillars: weighted contribution to each pillar score (omitted pillars = 0)
+const questions = [
+    { dim: 'Communication', multi: true,
+      text: 'Which messaging apps do you use?',
+      pillars: { Privacy: 1.0, Security: 0.5, Sovereignty: 0.25, Transparency: 1.0 },
+      opts: [
+        { text: 'WhatsApp',                                          score: 0 },
+        { text: 'Telegram',                                          score: 1 },
+        { text: 'Signal',                                            score: 2 },
+        { text: 'Something more niche — Matrix, Session, Briar...',  score: 3 },
+      ]},
+
+    { dim: 'Communication', multi: true,
+      text: 'Which email providers do you use?',
+      pillars: { Privacy: 1.0, Security: 0.5, Independence: 0.5, Sovereignty: 1.0, Transparency: 0.25 },
+      opts: [
+        { text: 'Gmail',                                             score: 0 },
+        { text: 'Outlook',                                           score: 1 },
+        { text: 'Proton Mail or another privacy-focused provider',   score: 2 },
+        { text: 'I host my own email',                               score: 3 },
+      ]},
+
+    { dim: 'Communication', multi: true,
+      text: 'For personal calls, you use...',
+      pillars: { Privacy: 1.0, Security: 0.5, Sovereignty: 0.25, Transparency: 1.0 },
+      opts: [
+        { text: 'WhatsApp video',                                    score: 0 },
+        { text: 'FaceTime',                                          score: 1 },
+        { text: 'Signal audio or video',                             score: 2 },
+        { text: 'Jitsi or an open alternative',                      score: 3 },
+      ]},
+
+    { dim: 'Storage & Files', multi: true,
+      text: 'Where do your files live?',
+      pillars: { Privacy: 1.0, Security: 0.5, Independence: 0.5, Sovereignty: 1.0 },
+      opts: [
+        { text: 'Google Drive',                                      score: 0 },
+        { text: 'iCloud, OneDrive, or Dropbox',                      score: 1 },
+        { text: 'Proton Drive or an encrypted alternative',          score: 2 },
+        { text: 'On my own storage — I manage it myself',            score: 3 },
+      ]},
+
+    { dim: 'Storage & Files', multi: false,
+      text: 'Your photos are backed up to...',
+      pillars: { Privacy: 1.0, Security: 0.5, Independence: 0.5, Sovereignty: 0.5 },
+      opts: [
+        { text: 'Google Photos — automatically',                     score: 0 },
+        { text: 'iCloud',                                            score: 1 },
+        { text: 'An external hard drive I control',                  score: 2 },
+        { text: 'A self-hosted or encrypted solution',               score: 3 },
+      ]},
+
+    { dim: 'Identity & Access', multi: false,
+      text: 'How do you manage your passwords?',
+      pillars: { Privacy: 0.25, Security: 1.0, Independence: 0.5, Transparency: 1.0 },
+      opts: [
+        { text: 'My browser remembers them, or I reuse the same ones', score: 0 },
+        { text: 'A commercial password manager (1Password, LastPass)', score: 1 },
+        { text: 'Bitwarden or another open-source manager',            score: 2 },
+        { text: 'I host my own password vault',                        score: 3 },
+      ]},
+
+    { dim: 'Identity & Access', multi: false,
+      text: 'When you see "Sign in with Google / Apple / Facebook", you...',
+      pillars: { Privacy: 0.5, Security: 1.0, Independence: 1.0, Sovereignty: 0.25 },
+      opts: [
+        { text: "Use it — it's so much easier",                      score: 0 },
+        { text: 'Use it for throwaway accounts',                     score: 1 },
+        { text: 'Avoid it but sometimes give in',                    score: 2 },
+        { text: 'Never — always a separate account',                 score: 3 },
+      ]},
+
+    { dim: 'Device & Software', multi: false,
+      text: 'Your phone runs on...',
+      pillars: { Privacy: 1.0, Security: 1.0, Independence: 0.5, Sovereignty: 0.5, Transparency: 0.5 },
+      opts: [
+        { text: 'Standard Android (Samsung, Pixel, etc.)',           score: 0 },
+        { text: 'iOS (Apple)',                                        score: 1 },
+        { text: 'Android with Google stripped out (GrapheneOS etc.)', score: 2 },
+        { text: 'Something else entirely',                           score: 3 },
+      ]},
+
+    { dim: 'Device & Software', multi: false,
+      text: "Your main computer's operating system is...",
+      pillars: { Privacy: 0.5, Security: 0.25, Independence: 1.0, Sovereignty: 0.5, Transparency: 1.0 },
+      opts: [
+        { text: 'ChromeOS',                                          score: 0 },
+        { text: 'Windows',                                           score: 1 },
+        { text: 'macOS',                                             score: 2 },
+        { text: 'Linux',                                             score: 3 },
+      ]},
+
+    { dim: 'Device & Software', multi: false,
+      text: "What's your main browser?",
+      pillars: { Privacy: 1.0, Security: 0.5, Independence: 0.5, Transparency: 1.0 },
+      opts: [
+        { text: 'Chrome',                                            score: 0 },
+        { text: 'Safari',                                            score: 1 },
+        { text: 'Firefox or Brave',                                  score: 2 },
+        { text: 'Something even more private',                       score: 3 },
+      ]},
+
+    { dim: 'Device & Software', multi: false,
+      text: 'For navigation, you use...',
+      pillars: { Privacy: 1.0, Independence: 0.5, Sovereignty: 0.5, Transparency: 0.5 },
+      opts: [
+        { text: 'Google Maps',                                       score: 0 },
+        { text: 'Apple Maps',                                        score: 1 },
+        { text: 'Organic Maps',                                      score: 2 },
+        { text: 'OsmAnd or something more advanced',                 score: 3 },
+      ]},
+
+    { dim: 'Payments & Money', multi: true,
+      text: 'When you pay online, you use...',
+      hint: 'Think webshops, subscriptions, and in-app purchases',
+      pillars: { Privacy: 1.0, Security: 0.5, Sovereignty: 1.0 },
+      opts: [
+        { text: 'Google Pay or PayPal',                              score: 0 },
+        { text: 'Apple Pay or my bank card directly',                score: 1 },
+        { text: 'A European fintech — Revolut, Wise, N26',           score: 2 },
+        { text: 'Crypto',                                            score: 3 },
+      ]},
+
+    { dim: 'Payments & Money', multi: false,
+      text: 'Your financial data is mostly held by...',
+      pillars: { Privacy: 0.5, Security: 0.5, Sovereignty: 1.0 },
+      opts: [
+        { text: 'Multiple US apps and platforms',                    score: 0 },
+        { text: 'One traditional bank',                              score: 1 },
+        { text: 'Mostly European providers',                         score: 2 },
+        { text: 'As few places as possible',                         score: 3 },
+      ]},
+
+    { dim: 'Online Presence', multi: false,
+      text: "What's your main search engine?",
+      pillars: { Privacy: 1.0, Sovereignty: 1.0, Transparency: 0.25 },
+      opts: [
+        { text: 'Google',                                            score: 0 },
+        { text: 'Bing',                                              score: 1 },
+        { text: 'DuckDuckGo',                                        score: 2 },
+        { text: 'Startpage, Brave Search, or Kagi',                  score: 3 },
+      ]},
+
+    { dim: 'Online Presence', multi: true,
+      text: 'Which social platforms are you active on?',
+      pillars: { Privacy: 1.0, Independence: 1.0, Sovereignty: 1.0, Transparency: 0.5 },
+      opts: [
+        { text: 'Facebook',                                          score: 0 },
+        { text: 'TikTok',                                            score: 0 },
+        { text: 'Instagram',                                         score: 0 },
+        { text: 'YouTube',                                           score: 0 },
+        { text: 'X (Twitter) or LinkedIn',                          score: 1 },
+        { text: 'BlueSky or Mastodon',                               score: 2 },
+        { text: "None — I've stepped back",                          score: 3 },
+      ]},
+
+    { dim: 'Online Presence', multi: false,
+      text: 'When a cookie banner appears, you...',
+      pillars: { Privacy: 1.0, Security: 0.25, Sovereignty: 0.25, Transparency: 0.5 },
+      opts: [
+        { text: 'Accept all — I just want to get to the page',       score: 0 },
+        { text: 'Sometimes decline the marketing ones',              score: 1 },
+        { text: 'Always reject what I can',                          score: 2 },
+        { text: 'My browser handles it before I even see it',        score: 3 },
+      ]},
+];
+
+const dims    = ['Communication', 'Storage & Files', 'Identity & Access', 'Device & Software', 'Payments & Money', 'Online Presence'];
+const pillars = ['Privacy', 'Security', 'Independence', 'Sovereignty', 'Transparency'];
+
+const pillarDesc = {
+    Privacy:      'How much companies can read or profile your data',
+    Security:     'How exposed you are to hackers and breaches',
+    Independence: 'How free you are from vendor lock-in',
+    Sovereignty:  'Whose laws govern your data',
+    Transparency: 'How auditable and open your tools are',
+};
+
+const levels = [
+    { max: 20,  title: 'In Denial',        desc: "You're deep in the relationship and everything feels fine. It's comfortable, convenient — and completely controlled by someone else." },
+    { max: 40,  title: "It's Complicated", desc: "You know something's off. You've had the thoughts. You're not ready to leave, but you're not fully comfortable either." },
+    { max: 60,  title: 'Taking Space',     desc: "You've started making moves. Some alternatives are in place. You're not free yet, but you're no longer pretending everything is fine." },
+    { max: 80,  title: 'Moving On',        desc: "You've made real changes. Big Tech is less present in your life than it used to be. You're building something better." },
+    { max: 100, title: 'New Love',         desc: "You've done the work. Your digital life is largely your own. You control your data, your tools, and your presence online." },
+];
+
+const recommendations = [
+    {
+        id:          'msg-signal',
+        questionIdx: 0,
+        to:          2,
+        title:       'Switch to Signal',
+        desc:        'End-to-end encrypted by default, non-profit, and open source. Ask your closest contacts to join — most are surprised how good it is. You can keep WhatsApp installed; Signal runs alongside it.',
+        action:      'Download Signal',
+        link:        'https://signal.org/download/',
+        effort:      1,
+    },
+    {
+        id:          'browser-brave',
+        questionIdx: 9,
+        to:          2,
+        title:       'Switch to Brave',
+        desc:        'Same experience as Chrome, with built-in ad and tracker blocking — no setup needed. Your browsing history stops feeding Google the moment you switch.',
+        action:      'Download Brave',
+        link:        'https://brave.com/download/',
+        effort:      1,
+    },
+    {
+        id:          'email-proton',
+        questionIdx: 1,
+        to:          2,
+        title:       'Move to Proton Mail',
+        desc:        'Swiss-based, end-to-end encrypted, and free to start. Create an account and migrate your subscriptions over time — you don\'t need to delete Gmail overnight.',
+        action:      'Create a Proton account',
+        link:        'https://proton.me/mail',
+        effort:      2,
+    },
+    {
+        id:          'search-startpage',
+        questionIdx: 13,
+        to:          3,
+        title:       'Switch to Startpage',
+        desc:        'Startpage delivers Google\'s search results without the tracking — identical quality, zero profile building. One setting change in your browser.',
+        action:      'Try Startpage',
+        link:        'https://www.startpage.com/',
+        effort:      1,
+    },
+    {
+        id:          'maps-organic',
+        questionIdx: 10,
+        to:          2,
+        title:       'Switch to Organic Maps',
+        desc:        'Free, open source, works fully offline — no account, no tracking, no ads. Covers cities and hiking trails well. Available on both iPhone and Android.',
+        action:      'Get Organic Maps',
+        link:        'https://organicmaps.app/',
+        effort:      1,
+    },
+    {
+        id:          'cookies-com',
+        questionIdx: 15,
+        to:          3,
+        title:       'Install Consent-O-Matic',
+        desc:        'Automatically rejects non-essential cookies on every site you visit. Open source, built by university researchers. Works in Brave and Firefox.',
+        action:      'Install the extension',
+        link:        'https://chromewebstore.google.com/detail/consent-o-matic/mdjildafknihdffpkfmmpnpoiajfjnjd',
+        effort:      1,
+    },
+];
+
+let current = 0;
+let dimScores = {};
+let pillarScores = {};
+let questionScores = [];
+let questionSelections = [];
+let selectedIndices = new Set();
+
+function showScreen(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById('screen-' + id).classList.add('active');
+}
+
+function startQuiz() {
+    current = 0;
+    dimScores         = Object.fromEntries(dims.map(d    => [d, { score: 0, max: 0 }]));
+    pillarScores      = Object.fromEntries(pillars.map(p => [p, { score: 0, max: 0 }]));
+    questionScores    = new Array(questions.length).fill(0);
+    questionSelections = questions.map(() => new Set());
+    showScreen('question');
+    renderQ();
+}
+
+function renderQ() {
+    const q = questions[current];
+    selectedIndices = new Set();
+
+    const pct = (current / questions.length) * 100;
+    document.getElementById('progressBar').style.width = pct + '%';
+    document.getElementById('qMeta').textContent = `${current + 1} of ${questions.length}`;
+    document.getElementById('qText').textContent = q.text;
+    document.getElementById('btnBack').classList.toggle('visible', current > 0);
+
+    const hint = document.getElementById('qHint');
+    if (q.hint) {
+        hint.textContent = q.multi ? q.hint + ' — select all that apply' : q.hint;
+    } else {
+        hint.textContent = q.multi ? 'Select all that apply' : '';
+    }
+
+    const continueBtn = document.getElementById('btnContinue');
+    continueBtn.classList.remove('visible');
+
+    const list = document.getElementById('qOptions');
+    list.innerHTML = '';
+
+    q.opts.forEach((opt, i) => {
+        const btn = document.createElement('button');
+        btn.className = 'option';
+
+        if (q.multi) {
+            btn.innerHTML = `<span class="check"><svg class="check-tick" viewBox="0 0 10 10" fill="none"><polyline points="1.5,5 4,7.5 8.5,2.5" stroke="#000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span>${opt.text}</span>`;
+            btn.onclick = () => toggleMulti(i, btn);
+        } else {
+            btn.textContent = opt.text;
+            btn.onclick = () => pickSingle(i, btn);
+        }
+
+        // Restore previous answer when navigating back
+        if (questionSelections[current] && questionSelections[current].has(i)) {
+            selectedIndices.add(i);
+            btn.classList.add('selected');
+        }
+
+        list.appendChild(btn);
+    });
+
+    // Restore Continue button visibility for multi-select questions
+    if (q.multi) {
+        continueBtn.classList.toggle('visible', selectedIndices.size > 0);
+    }
+}
+
+function toggleMulti(i, btn) {
+    if (selectedIndices.has(i)) {
+        selectedIndices.delete(i);
+        btn.classList.remove('selected');
+    } else {
+        selectedIndices.add(i);
+        btn.classList.add('selected');
+    }
+
+    const continueBtn = document.getElementById('btnContinue');
+    continueBtn.classList.toggle('visible', selectedIndices.size > 0);
+}
+
+// Records a score s (0-3) for question q into both dim and weighted pillar accumulators
+function recordScore(q, s) {
+    dimScores[q.dim].score += s;
+    dimScores[q.dim].max   += 3;
+    Object.entries(q.pillars).forEach(([p, w]) => {
+        pillarScores[p].score += w * s;
+        pillarScores[p].max   += w * 3;
+    });
+}
+
+function advance() {
+    const q      = questions[current];
+    const scores = [...selectedIndices].map(i => q.opts[i].score);
+    // Average instead of max: penalises keeping bad services alongside good ones
+    const avg    = Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
+    questionScores[current]    = avg;
+    questionSelections[current] = new Set(selectedIndices);
+    recordScore(q, avg);
+
+    current++;
+    if (current < questions.length) renderQ();
+    else showResults();
+}
+
+function pickSingle(i, btn) {
+    document.querySelectorAll('.option').forEach(o => { o.disabled = true; o.style.pointerEvents = 'none'; });
+    btn.classList.add('selected');
+
+    const s = questions[current].opts[i].score;
+    questionScores[current]    = s;
+    questionSelections[current] = new Set([i]);
+    recordScore(questions[current], s);
+
+    setTimeout(() => {
+        current++;
+        if (current < questions.length) renderQ();
+        else showResults();
+    }, 380);
+}
+
+function showResults() {
+    document.getElementById('progressBar').style.width = '100%';
+
+    // Overall score: equal weight per question via dim totals
+    const total  = dims.reduce((s, d) => s + dimScores[d].score, 0);
+    const maxTot = dims.reduce((s, d) => s + dimScores[d].max,   0);
+    const pct    = Math.round((total / maxTot) * 100);
+    const level  = levels.find(l => pct <= l.max);
+
+    document.getElementById('rTitle').textContent = level.title;
+    document.getElementById('rScore').textContent = `${pct}% digital autonomy`;
+    document.getElementById('rDesc').textContent  = level.desc;
+
+    showScreen('result');
+    setTimeout(() => { document.getElementById('rBar').style.width = pct + '%'; }, 80);
+
+    // What: pillar donut rings — render at 0 then animate to real values
+    document.getElementById('rPillarDonuts').innerHTML = pillars.map(p =>
+        `<div class="pillar-donut" id="donut-${p}">
+            <div class="pillar-ring" style="--pct:0"><span class="pillar-pct">0%</span></div>
+            <span class="pillar-label">${p}</span>
+        </div>`
+    ).join('');
+    setTimeout(() => {
+        pillars.forEach(p => {
+            const pp = pillarScores[p].max ? Math.round((pillarScores[p].score / pillarScores[p].max) * 100) : 0;
+            document.querySelector(`#donut-${p} .pillar-ring`).style.setProperty('--pct', pp);
+            document.querySelector(`#donut-${p} .pillar-pct`).textContent = pp + '%';
+        });
+    }, 80);
+
+    // Where: topic breakdown (equal weight per question)
+    document.getElementById('rBreakdownWhere').innerHTML = dims.map(d => {
+        const dp = dimScores[d].max ? Math.round((dimScores[d].score / dimScores[d].max) * 100) : 0;
+        return `<div class="breakdown-row">
+            <span class="breakdown-dim">${d}</span>
+            <div class="breakdown-bar-col">
+                <div class="breakdown-track"><div class="breakdown-fill" style="width:${dp}%"></div></div>
+            </div>
+            <span class="breakdown-pct">${dp}%</span>
+        </div>`;
+    }).join('');
+
+    // Recommendations: show cards for any question where the user scored below the target
+    const applicable = recommendations.filter(r => questionScores[r.questionIdx] < r.to);
+    const recsEl     = document.getElementById('rRecs');
+    if (applicable.length === 0) {
+        recsEl.innerHTML = '<p style="font-size:14px;color:var(--muted);">You\'ve already made the key moves. Impressive.</p>';
+    } else {
+        const effortLabel = e => ['', 'Low effort', 'Some effort', 'Significant effort'][e];
+        recsEl.innerHTML =
+            '<div class="recs-label">Your next moves</div>' +
+            applicable.map(r => `<div class="rec-card">
+                <div class="rec-card-top">
+                    <span class="rec-card-title">${r.title}</span>
+                    <span class="rec-effort">${effortLabel(r.effort)}</span>
+                </div>
+                <p class="rec-card-desc">${r.desc}</p>
+                <a class="rec-action" href="${r.link}" target="_blank" rel="noopener noreferrer">${r.action} →</a>
+            </div>`).join('');
+    }
+}
+
+
+function unrecordScore(q, s) {
+    dimScores[q.dim].score -= s;
+    dimScores[q.dim].max   -= 3;
+    Object.entries(q.pillars).forEach(([p, w]) => {
+        pillarScores[p].score -= w * s;
+        pillarScores[p].max   -= w * 3;
+    });
+}
+
+function back() {
+    if (current === 0) return;
+    current--;
+    unrecordScore(questions[current], questionScores[current]);
+    questionScores[current] = 0;
+    renderQ();
+}
+
+function retake() { startQuiz(); }
+</script>
+</body>
+</html>
