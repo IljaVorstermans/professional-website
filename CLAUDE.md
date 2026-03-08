@@ -53,10 +53,35 @@ For any non-trivial decision (architecture, libraries, design patterns, implemen
 
 ---
 
-## Tech stack (TBD)
+## Tech stack
 
-The stack has not been chosen yet. When the time comes to choose, present options using the format described above with a focus on:
-- Ease of use for someone not deeply technical
-- Long-term maintainability
-- Hosting cost and complexity
-- How well it fits a portfolio site with potential light dynamic features
+Decided 2026-03-08:
+
+| Layer      | Choice           | Notes                                              |
+|------------|------------------|----------------------------------------------------|
+| Framework  | Next.js 16 (App Router) | TypeScript, `src/` directory layout         |
+| Backend/DB | Supabase         | Auth, PostgreSQL, real-time. Not yet integrated.   |
+| Hosting    | Vercel           | Connected to GitHub repo. Not yet set up.          |
+
+### Rationale
+- Next.js chosen for native Vercel integration and future-proofing for user accounts + social features.
+- Supabase chosen for auth, real-time leaderboard, and mobile-app-compatible API layer.
+- Vercel chosen for zero-config deployment and seamless Next.js support.
+
+### Future features planned
+- User accounts (Supabase Auth)
+- Friends + leaderboard between accounts
+- iOS/Android app (React Native consuming the same Supabase backend, no backend refactor needed)
+
+### Project structure
+```
+src/
+  app/
+    layout.tsx        — root layout, fonts, metadata
+    page.tsx          — redirects / → /quiz
+    globals.css       — all global styles
+    quiz/
+      page.tsx        — route entry point
+      Quiz.tsx        — full quiz React component ('use client')
+      data.ts         — questions, levels, pillars, recommendations (pure data)
+```
