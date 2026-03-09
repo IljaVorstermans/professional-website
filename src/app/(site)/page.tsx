@@ -18,7 +18,7 @@ export default function HomePage() {
             Find out if you&rsquo;re in denial or close to finding new love in under two minutes.
             No account required.
           </p>
-          <Link href="/quiz" className="btn-primary">Find out →</Link>
+          <Link href="/quiz?start=1" className="btn-primary">Find out →</Link>
         </div>
       </section>
 
@@ -27,7 +27,7 @@ export default function HomePage() {
         <span className="label">About</span>
         <h2 className="section-title">Business meets technology</h2>
         <p className="section-body">
-          I work at the intersection of business strategy and information technology —
+          I work at the intersection of business strategy and information technology,
           helping organisations make sense of data, AI, and digital infrastructure.
           Currently finishing my MSc Business Information Management at RSM.
         </p>
@@ -44,7 +44,7 @@ export default function HomePage() {
             <h3 className="project-title">GDPR Document Redaction</h3>
             <p className="project-desc">
               Built a privacy-first pipeline for automated redaction of sensitive data in
-              legal documents — locally processed, no cloud dependency.
+              legal documents, locally processed with no cloud dependency.
             </p>
           </div>
           <div className="project-card">

@@ -125,8 +125,8 @@ function QuestionScreen({
 
 // ── Root ──────────────────────────────────────────────────────────────────────
 
-export default function Quiz() {
-  const [screen, setScreen]                     = useState<Screen>('landing');
+export default function Quiz({ autoStart = false }: { autoStart?: boolean }) {
+  const [screen, setScreen]                     = useState<Screen>(autoStart ? 'question' : 'landing');
   const [current, setCurrent]                   = useState(0);
   const [dimScores, setDimScores]               = useState<Accumulator>(makeDimScores);
   const [pillarScores, setPillarScores]         = useState<Accumulator>(makePillarScores);
