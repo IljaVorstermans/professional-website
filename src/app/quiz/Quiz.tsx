@@ -62,7 +62,7 @@ function QuestionScreen({
   const progressPct = (current / questions.length) * 100;
   const showContinue = q.multi && selectedIndices.size > 0;
   const hint = q.hint
-    ? (q.multi ? q.hint + ' — select all that apply' : q.hint)
+    ? (q.multi ? q.hint + ', select all that apply' : q.hint)
     : (q.multi ? 'Select all that apply' : '');
 
   return (
@@ -111,9 +111,13 @@ function QuestionScreen({
             );
           })}
         </div>
-        {showContinue && (
-          <button className="btn-continue" onClick={onContinue}>Continue →</button>
-        )}
+        <button
+          className="btn-continue"
+          onClick={onContinue}
+          style={{ visibility: showContinue ? 'visible' : 'hidden' }}
+        >
+          Continue →
+        </button>
       </div>
     </>
   );

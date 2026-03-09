@@ -9,14 +9,7 @@ export default function ContactPage() {
       </p>
       <div className="contact-links">
         <a
-          href="mailto:ilja@generationc.nl"
-          className="contact-link"
-        >
-          <span className="contact-link-label">Email</span>
-          <span className="contact-link-value">ilja@generationc.nl</span>
-        </a>
-        <a
-          href="https://www.linkedin.com/in/ilja-vorstermans"
+          href="https://www.linkedin.com/in/ilja-vorstermans-644920193/"
           target="_blank"
           rel="noopener noreferrer"
           className="contact-link"
@@ -24,7 +17,7 @@ export default function ContactPage() {
           <span className="contact-link-label">LinkedIn</span>
           <span className="contact-link-value">linkedin.com/in/ilja-vorstermans</span>
         </a>
-        <a
+        {/* <a
           href="https://github.com/IljaVorstermans"
           target="_blank"
           rel="noopener noreferrer"
@@ -32,7 +25,7 @@ export default function ContactPage() {
         >
           <span className="contact-link-label">GitHub</span>
           <span className="contact-link-value">github.com/IljaVorstermans</span>
-        </a>
+        </a> */}
       </div>
     </div>
   );

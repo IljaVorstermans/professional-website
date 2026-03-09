@@ -2,7 +2,7 @@ const projects = [
   {
     tag: 'Data / AI',
     title: 'GDPR Document Redaction',
-    desc: 'Privacy-first pipeline for automated redaction of sensitive data in legal documents. Locally processed, no cloud dependency. Built for a Dutch legal services firm.',
+    desc: 'Privacy-first pipeline for automated redaction of sensitive data in documents, built for a Dutch real estate agency. Locally processed, no cloud dependency, and built entirely on open-source software, so no licensing fees.',
   },
   {
     tag: 'Finance / API',
@@ -13,11 +13,6 @@ const projects = [
     tag: 'AI / Search',
     title: 'GenAI Document Search',
     desc: 'Semantic search across internal document libraries using embeddings and a retrieval-augmented generation (RAG) approach. GDPR-compliant by design.',
-  },
-  {
-    tag: 'Research / Finance',
-    title: 'Air France-KLM Investment Pitch',
-    desc: 'Full investment thesis and financial analysis for Brût Investments, covering commercial strategy, balance sheet, and valuation.',
   },
 ];
 

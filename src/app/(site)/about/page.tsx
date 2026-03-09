@@ -31,8 +31,9 @@ export default function AboutPage() {
         <h2 className="content-heading">Interests</h2>
         <p className="content-body">
           Digital autonomy, open-source infrastructure, privacy tooling, and the
-          intersection of financial markets and technology. I self-host parts of my digital
-          life on a Raspberry Pi and think carefully about what data I share and with whom.
+          intersection of financial markets and technology. I believe most people give away
+          more control over their data and tools than they realise, and I think a lot about
+          what it means to actually own your digital life.
         </p>
       </div>
     </div>

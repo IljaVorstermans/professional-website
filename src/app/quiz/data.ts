@@ -52,9 +52,9 @@ export const pillarDesc: Record<string, string> = {
 };
 
 export const levels: Level[] = [
-  { max: 20,  title: 'In Denial',        desc: "You're deep in the relationship and everything feels fine. It's comfortable, convenient — and completely controlled by someone else." },
+  { max: 20,  title: 'In Denial',        desc: "You're deep in the relationship and everything feels fine. It's comfortable, convenient, and completely controlled by someone else." },
   { max: 40,  title: "It's Complicated", desc: "You know something's off. You've had the thoughts. You're not ready to leave, but you're not fully comfortable either." },
-  { max: 60,  title: "It's not me, it's you!", desc: "You've started to see the relationship for what it is — and you're calling it out. A few alternatives are in place. You're not gone yet, but you know exactly who's at fault." },
+  { max: 60,  title: "It's not me, it's you!", desc: "You've started to see the relationship for what it is, and you're calling it out. A few alternatives are in place. You're not gone yet, but you know exactly who's at fault." },
   { max: 80,  title: 'Seeing Someone Else',  desc: "You're actively exploring alternatives and actually using them. Big Tech is still in your contacts, but it's no longer your main thing." },
   { max: 100, title: 'New Love',         desc: "You've done the work. Your digital life is largely your own. You control your data, your tools, and your presence online." },
 ];
@@ -67,7 +67,7 @@ export const questions: Question[] = [
       { text: 'WhatsApp',                                          score: 0 },
       { text: 'Telegram',                                          score: 1 },
       { text: 'Signal',                                            score: 2 },
-      { text: 'Something more niche — Matrix, Session, Briar...',  score: 3 },
+      { text: 'Something more niche: Matrix, Session, Briar...',   score: 3 },
     ]},
 
   { dim: 'Communication', multi: true,
@@ -97,14 +97,14 @@ export const questions: Question[] = [
       { text: 'Google Drive',                                      score: 0 },
       { text: 'iCloud, OneDrive, or Dropbox',                      score: 1 },
       { text: 'Proton Drive or an encrypted alternative',          score: 2 },
-      { text: 'On my own storage — I manage it myself',            score: 3 },
+      { text: 'On my own storage (I manage it myself)',             score: 3 },
     ]},
 
   { dim: 'Storage & Files', multi: false,
     text: 'Your photos are backed up to...',
     pillars: { Privacy: 1.0, Security: 0.5, Independence: 0.5, Sovereignty: 0.5 },
     opts: [
-      { text: 'Google Photos — automatically',                     score: 0 },
+      { text: 'Google Photos, automatically',                      score: 0 },
       { text: 'iCloud',                                            score: 1 },
       { text: 'An external hard drive I control',                  score: 2 },
       { text: 'A self-hosted or encrypted solution',               score: 3 },
@@ -124,10 +124,10 @@ export const questions: Question[] = [
     text: 'When you see "Sign in with Google / Apple / Facebook", you...',
     pillars: { Privacy: 0.5, Security: 1.0, Independence: 1.0, Sovereignty: 0.25 },
     opts: [
-      { text: "Use it — it's so much easier",                      score: 0 },
+      { text: "Use it, it's so much easier",                       score: 0 },
       { text: 'Use it for throwaway accounts',                     score: 1 },
       { text: 'Avoid it but sometimes give in',                    score: 2 },
-      { text: 'Never — always a separate account',                 score: 3 },
+      { text: 'Never, always a separate account',                  score: 3 },
     ]},
 
   { dim: 'Device & Software', multi: false,
@@ -177,7 +177,7 @@ export const questions: Question[] = [
     opts: [
       { text: 'Google Pay or PayPal',                              score: 0 },
       { text: 'Apple Pay or my bank card directly',                score: 1 },
-      { text: 'A European fintech — Revolut, Wise, N26',           score: 2 },
+      { text: 'A European fintech: Revolut, Wise, N26',            score: 2 },
       { text: 'Crypto',                                            score: 3 },
     ]},
 
@@ -211,14 +211,14 @@ export const questions: Question[] = [
       { text: 'YouTube',                                           score: 0 },
       { text: 'X (Twitter) or LinkedIn',                           score: 1 },
       { text: 'BlueSky or Mastodon',                               score: 2 },
-      { text: "None — I've stepped back",                          score: 3 },
+      { text: "None, I've stepped back",                           score: 3 },
     ]},
 
   { dim: 'Online Presence', multi: false,
     text: 'When a cookie banner appears, you...',
     pillars: { Privacy: 1.0, Security: 0.25, Sovereignty: 0.25, Transparency: 0.5 },
     opts: [
-      { text: 'Accept all — I just want to get to the page',       score: 0 },
+      { text: 'Accept all, I just want to get to the page',        score: 0 },
       { text: 'Sometimes decline the marketing ones',              score: 1 },
       { text: 'Always reject what I can',                          score: 2 },
       { text: 'My browser handles it before I even see it',        score: 3 },
@@ -231,7 +231,7 @@ export const recommendations: Recommendation[] = [
     questionIdx: 0,
     to:          2,
     title:       'Switch to Signal',
-    desc:        'End-to-end encrypted by default, non-profit, and open source. Ask your closest contacts to join — most are surprised how good it is. You can keep WhatsApp installed; Signal runs alongside it.',
+    desc:        'End-to-end encrypted by default, non-profit, and open source. Ask your closest contacts to join. Most are surprised how good it is. You can keep WhatsApp installed; Signal runs alongside it.',
     action:      'Download Signal',
     link:        'https://signal.org/download/',
     effort:      1,
@@ -241,7 +241,7 @@ export const recommendations: Recommendation[] = [
     questionIdx: 9,
     to:          2,
     title:       'Switch to Brave',
-    desc:        'Same experience as Chrome, with built-in ad and tracker blocking — no setup needed. Your browsing history stops feeding Google the moment you switch.',
+    desc:        'Same experience as Chrome, with built-in ad and tracker blocking. No setup needed. Your browsing history stops feeding Google the moment you switch.',
     action:      'Download Brave',
     link:        'https://brave.com/download/',
     effort:      1,
@@ -251,7 +251,7 @@ export const recommendations: Recommendation[] = [
     questionIdx: 1,
     to:          2,
     title:       'Move to Proton Mail',
-    desc:        "Swiss-based, end-to-end encrypted, and free to start. Create an account and migrate your subscriptions over time — you don't need to delete Gmail overnight.",
+    desc:        "Swiss-based, end-to-end encrypted, and free to start. Create an account and migrate your subscriptions over time. You don't need to delete Gmail overnight.",
     action:      'Create a Proton account',
     link:        'https://proton.me/mail',
     effort:      2,
@@ -261,7 +261,7 @@ export const recommendations: Recommendation[] = [
     questionIdx: 13,
     to:          3,
     title:       'Switch to Startpage',
-    desc:        "Startpage delivers Google's search results without the tracking — identical quality, zero profile building. One setting change in your browser.",
+    desc:        "Startpage delivers Google's search results without the tracking. Identical quality, zero profile building. One setting change in your browser.",
     action:      'Try Startpage',
     link:        'https://www.startpage.com/',
     effort:      1,
@@ -271,7 +271,7 @@ export const recommendations: Recommendation[] = [
     questionIdx: 10,
     to:          2,
     title:       'Switch to Organic Maps',
-    desc:        'Free, open source, works fully offline — no account, no tracking, no ads. Covers cities and hiking trails well. Available on both iPhone and Android.',
+    desc:        'Free, open source, works fully offline. No account, no tracking, no ads. Covers cities and hiking trails well. Available on both iPhone and Android.',
     action:      'Get Organic Maps',
     link:        'https://organicmaps.app/',
     effort:      1,

@@ -15,6 +15,7 @@ This is a **professional portfolio website** for Ilja Vorstermans, with potentia
 - **Explain decisions in plain language.** I operate at the intersection of business and IT. Do not assume deep technical knowledge. When a technical choice has implications (cost, complexity, maintainability, scalability), explain those implications so I can make an informed decision.
 - **Ask when unsure.** If the intent or requirement is ambiguous, ask before proceeding.
 - **When I give new standing instructions**, propose adding them to this CLAUDE.md file at the end of the conversation.
+- **Never use em dashes (—).** In all copy, code comments, and documentation, use a comma, hyphen, or rewrite the sentence instead.
 
 ---
 
