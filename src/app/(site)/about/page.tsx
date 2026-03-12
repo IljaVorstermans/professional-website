@@ -1,3 +1,10 @@
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'About',
+  description: 'Ilja Vorstermans works at the intersection of business strategy and IT, with a focus on privacy-first solutions, digital autonomy, and European tech independence.',
+};
+
 export default function AboutPage() {
   return (
     <div className="page-content">

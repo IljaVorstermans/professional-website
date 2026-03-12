@@ -6,7 +6,22 @@ This file contains standing instructions for Claude. Read it at the start of eve
 
 ## Project overview
 
-This is a **professional portfolio website** for Ilja Vorstermans, with potential limited extension into a full-stack web application (e.g. a contact form, CMS, or simple backend). The tech stack has not yet been decided.
+This is a **professional portfolio website** for Ilja Vorstermans that doubles as a platform for the Digital Autonomy Quiz. It serves two interconnected goals:
+
+1. **Mission:** Raise awareness of European strategic autonomy and Big Tech dependence. Ilja genuinely cares about reducing Europe's reliance on US tech platforms and wants the site to contribute to that, even in a small way.
+2. **Lead generation:** The quiz is the primary engagement tool. A future SME-focused quiz will make the commercial angle more explicit, but the consumer quiz reaches a broader audience and serves as top-of-funnel.
+
+### Tone and content principles
+- **Make it concrete and personal.** Most people don't care about abstract privacy arguments. The goal is to make the implications visceral and specific - not "Google reads your email" but what that actually means for them personally. Think: the Snowden effect (people didn't care until they heard the NSA could see their nudes).
+- **Evidence-based.** All claims should be grounded in credible sources: academic papers, EU institutions, or well-regarded references like https://european-alternatives.eu/categories. Avoid vague or unsubstantiated claims.
+- **Accessible, not preachy.** The audience includes everyday people who feel unable to change their Big Tech habits. The tone should be empowering, not guilt-inducing.
+
+### Future features planned
+- Email capture on quiz result screen (lead magnet)
+- SME-focused quiz (more explicit commercial angle)
+- User accounts with leaderboard (Supabase Auth)
+- Friends + social comparison
+- iOS/Android app (React Native, same Supabase backend)
 
 ---
 

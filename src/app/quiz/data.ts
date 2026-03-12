@@ -6,7 +6,7 @@ export type Question = {
   text: string;
   hint?: string;
   pillars: Record<string, number>;
-  opts: { text: string; score: number }[];
+  opts: { text: string; score: number; emoji?: string }[];
 };
 
 export type Level = {
@@ -24,6 +24,9 @@ export type Recommendation = {
   action: string;
   link: string;
   effort: number;
+  excludeIfSelected?: number[]; // suppress rec if user already selected any of these option indices
+  sourceLabel?: string;
+  sourceUrl?: string;
 };
 
 export const dims = [
@@ -64,10 +67,10 @@ export const questions: Question[] = [
     text: 'Which messaging apps do you use?',
     pillars: { Privacy: 1.0, Security: 0.5, Sovereignty: 0.25, Transparency: 1.0 },
     opts: [
-      { text: 'WhatsApp',                                          score: 0 },
-      { text: 'Telegram',                                          score: 1 },
-      { text: 'Signal',                                            score: 2 },
-      { text: 'Something more niche: Matrix, Session, Briar...',   score: 3 },
+      { text: 'WhatsApp',                                          score: 0, emoji: '💬' },
+      { text: 'Telegram',                                          score: 1, emoji: '✈️' },
+      { text: 'Signal',                                            score: 2, emoji: '🔒' },
+      { text: 'Something more niche: Matrix, Session, Briar...',   score: 3, emoji: '🌐' },
     ]},
 
   { dim: 'Communication', multi: true,
@@ -84,40 +87,40 @@ export const questions: Question[] = [
     text: 'For personal calls, you use...',
     pillars: { Privacy: 1.0, Security: 0.5, Sovereignty: 0.25, Transparency: 1.0 },
     opts: [
-      { text: 'WhatsApp video',                                    score: 0 },
-      { text: 'FaceTime',                                          score: 1 },
-      { text: 'Signal audio or video',                             score: 2 },
-      { text: 'Jitsi or an open alternative',                      score: 3 },
+      { text: 'WhatsApp video',                                    score: 0, emoji: '📹' },
+      { text: 'FaceTime',                                          score: 1, emoji: '📱' },
+      { text: 'Signal audio or video',                             score: 2, emoji: '🛡️' },
+      { text: 'Jitsi or an open alternative',                      score: 3, emoji: '🎙️' },
     ]},
 
   { dim: 'Storage & Files', multi: true,
     text: 'Where do your files live?',
     pillars: { Privacy: 1.0, Security: 0.5, Independence: 0.5, Sovereignty: 1.0 },
     opts: [
-      { text: 'Google Drive',                                      score: 0 },
-      { text: 'iCloud, OneDrive, or Dropbox',                      score: 1 },
-      { text: 'Proton Drive or an encrypted alternative',          score: 2 },
-      { text: 'On my own storage (I manage it myself)',             score: 3 },
+      { text: 'Google Drive',                                      score: 0, emoji: '☁️' },
+      { text: 'iCloud, OneDrive, or Dropbox',                      score: 1, emoji: '📦' },
+      { text: 'Proton Drive or an encrypted alternative',          score: 2, emoji: '🔐' },
+      { text: 'On my own storage (I manage it myself)',             score: 3, emoji: '💾' },
     ]},
 
   { dim: 'Storage & Files', multi: false,
     text: 'Your photos are backed up to...',
     pillars: { Privacy: 1.0, Security: 0.5, Independence: 0.5, Sovereignty: 0.5 },
     opts: [
-      { text: 'Google Photos, automatically',                      score: 0 },
-      { text: 'iCloud',                                            score: 1 },
-      { text: 'An external hard drive I control',                  score: 2 },
-      { text: 'A self-hosted or encrypted solution',               score: 3 },
+      { text: 'Google Photos, automatically',                      score: 0, emoji: '🖼️' },
+      { text: 'iCloud',                                            score: 1, emoji: '☁️' },
+      { text: 'An external hard drive I control',                  score: 2, emoji: '💾' },
+      { text: 'A self-hosted or encrypted solution',               score: 3, emoji: '🔐' },
     ]},
 
   { dim: 'Identity & Access', multi: false,
     text: 'How do you manage your passwords?',
     pillars: { Privacy: 0.25, Security: 1.0, Independence: 0.5, Transparency: 1.0 },
     opts: [
-      { text: 'My browser remembers them, or I reuse the same ones', score: 0 },
-      { text: 'A commercial password manager (1Password, LastPass)', score: 1 },
-      { text: 'Bitwarden or another open-source manager',            score: 2 },
-      { text: 'I host my own password vault',                        score: 3 },
+      { text: 'My browser remembers them, or I reuse the same ones', score: 0, emoji: '🌐' },
+      { text: 'A commercial password manager (1Password, LastPass)', score: 1, emoji: '🔑' },
+      { text: 'Bitwarden or another open-source manager',            score: 2, emoji: '🛡️' },
+      { text: 'I host my own password vault',                        score: 3, emoji: '🏠' },
     ]},
 
   { dim: 'Identity & Access', multi: false,
@@ -134,40 +137,40 @@ export const questions: Question[] = [
     text: 'Your phone runs on...',
     pillars: { Privacy: 1.0, Security: 1.0, Independence: 0.5, Sovereignty: 0.5, Transparency: 0.5 },
     opts: [
-      { text: 'Standard Android (Samsung, Pixel, etc.)',           score: 0 },
-      { text: 'iOS (Apple)',                                        score: 1 },
-      { text: 'Android with Google stripped out (GrapheneOS etc.)', score: 2 },
-      { text: 'Something else entirely',                           score: 3 },
+      { text: 'Standard Android (Samsung, Pixel, etc.)',           score: 0, emoji: '🤖' },
+      { text: 'iOS (Apple)',                                        score: 1, emoji: '🍎' },
+      { text: 'Android with Google stripped out (GrapheneOS etc.)', score: 2, emoji: '🛡️' },
+      { text: 'Something else entirely',                           score: 3, emoji: '❓' },
     ]},
 
   { dim: 'Device & Software', multi: false,
     text: "Your main computer's operating system is...",
     pillars: { Privacy: 0.5, Security: 0.25, Independence: 1.0, Sovereignty: 0.5, Transparency: 1.0 },
     opts: [
-      { text: 'ChromeOS',                                          score: 0 },
-      { text: 'Windows',                                           score: 1 },
-      { text: 'macOS',                                             score: 2 },
-      { text: 'Linux',                                             score: 3 },
+      { text: 'ChromeOS',                                          score: 0, emoji: '🌐' },
+      { text: 'Windows',                                           score: 1, emoji: '🪟' },
+      { text: 'macOS',                                             score: 2, emoji: '🍎' },
+      { text: 'Linux',                                             score: 3, emoji: '🐧' },
     ]},
 
   { dim: 'Device & Software', multi: false,
     text: "What's your main browser?",
     pillars: { Privacy: 1.0, Security: 0.5, Independence: 0.5, Transparency: 1.0 },
     opts: [
-      { text: 'Chrome',                                            score: 0 },
-      { text: 'Safari',                                            score: 1 },
-      { text: 'Firefox or Brave',                                  score: 2 },
-      { text: 'Something even more private',                       score: 3 },
+      { text: 'Chrome',                                            score: 0, emoji: '🌐' },
+      { text: 'Safari',                                            score: 1, emoji: '🧭' },
+      { text: 'Firefox or Brave',                                  score: 2, emoji: '🦊' },
+      { text: 'Something even more private',                       score: 3, emoji: '🕵️' },
     ]},
 
   { dim: 'Device & Software', multi: false,
     text: 'For navigation, you use...',
     pillars: { Privacy: 1.0, Independence: 0.5, Sovereignty: 0.5, Transparency: 0.5 },
     opts: [
-      { text: 'Google Maps',                                       score: 0 },
-      { text: 'Apple Maps',                                        score: 1 },
-      { text: 'Organic Maps',                                      score: 2 },
-      { text: 'OsmAnd or something more advanced',                 score: 3 },
+      { text: 'Google Maps',                                       score: 0, emoji: '📍' },
+      { text: 'Apple Maps',                                        score: 1, emoji: '🗺️' },
+      { text: 'Organic Maps',                                      score: 2, emoji: '🌿' },
+      { text: 'OsmAnd or something more advanced',                 score: 3, emoji: '🧭' },
     ]},
 
   { dim: 'Payments & Money', multi: true,
@@ -175,66 +178,69 @@ export const questions: Question[] = [
     hint: 'Think webshops, subscriptions, and in-app purchases',
     pillars: { Privacy: 1.0, Security: 0.5, Sovereignty: 1.0 },
     opts: [
-      { text: 'Google Pay or PayPal',                              score: 0 },
-      { text: 'Apple Pay or my bank card directly',                score: 1 },
-      { text: 'A European fintech: Revolut, Wise, N26',            score: 2 },
-      { text: 'Crypto',                                            score: 3 },
+      { text: 'Google Pay or PayPal',                              score: 0, emoji: '💳' },
+      { text: 'Apple Pay or my bank card directly',                score: 1, emoji: '📱' },
+      { text: 'A European fintech: Revolut, Wise, N26',            score: 2, emoji: '🇪🇺' },
+      { text: 'Crypto',                                            score: 3, emoji: '🪙' },
     ]},
 
   { dim: 'Payments & Money', multi: false,
     text: 'Your financial data is mostly held by...',
     pillars: { Privacy: 0.5, Security: 0.5, Sovereignty: 1.0 },
     opts: [
-      { text: 'Multiple US apps and platforms',                    score: 0 },
-      { text: 'One traditional bank',                              score: 1 },
-      { text: 'Mostly European providers',                         score: 2 },
-      { text: 'As few places as possible',                         score: 3 },
+      { text: 'Multiple US apps and platforms',                    score: 0, emoji: '🇺🇸' },
+      { text: 'One traditional bank',                              score: 1, emoji: '🏦' },
+      { text: 'Mostly European providers',                         score: 2, emoji: '🇪🇺' },
+      { text: 'As few places as possible',                         score: 3, emoji: '🔐' },
     ]},
 
   { dim: 'Online Presence', multi: false,
     text: "What's your main search engine?",
     pillars: { Privacy: 1.0, Sovereignty: 1.0, Transparency: 0.25 },
     opts: [
-      { text: 'Google',                                            score: 0 },
-      { text: 'Bing',                                              score: 1 },
-      { text: 'DuckDuckGo',                                        score: 2 },
-      { text: 'Startpage, Brave Search, or Kagi',                  score: 3 },
+      { text: 'Google',                                            score: 0, emoji: '🔍' },
+      { text: 'Bing',                                              score: 1, emoji: '🔎' },
+      { text: 'DuckDuckGo',                                        score: 2, emoji: '🦆' },
+      { text: 'Startpage, Brave Search, or Kagi',                  score: 3, emoji: '🛡️' },
     ]},
 
   { dim: 'Online Presence', multi: true,
     text: 'Which social platforms are you active on?',
     pillars: { Privacy: 1.0, Independence: 1.0, Sovereignty: 1.0, Transparency: 0.5 },
     opts: [
-      { text: 'Facebook',                                          score: 0 },
-      { text: 'TikTok',                                            score: 0 },
-      { text: 'Instagram',                                         score: 0 },
-      { text: 'YouTube',                                           score: 0 },
-      { text: 'X (Twitter) or LinkedIn',                           score: 1 },
-      { text: 'BlueSky or Mastodon',                               score: 2 },
-      { text: "None, I've stepped back",                           score: 3 },
+      { text: 'Facebook',                                          score: 0, emoji: '👤' },
+      { text: 'TikTok',                                            score: 0, emoji: '🎵' },
+      { text: 'Instagram',                                         score: 0, emoji: '📸' },
+      { text: 'YouTube',                                           score: 0, emoji: '▶️' },
+      { text: 'X (Twitter) or LinkedIn',                           score: 1, emoji: '🐦' },
+      { text: 'BlueSky or Mastodon',                               score: 2, emoji: '🦋' },
+      { text: "None, I've stepped back",                           score: 3, emoji: '✌️' },
     ]},
 
   { dim: 'Online Presence', multi: false,
     text: 'When a cookie banner appears, you...',
     pillars: { Privacy: 1.0, Security: 0.25, Sovereignty: 0.25, Transparency: 0.5 },
     opts: [
-      { text: 'Accept all, I just want to get to the page',        score: 0 },
-      { text: 'Sometimes decline the marketing ones',              score: 1 },
-      { text: 'Always reject what I can',                          score: 2 },
-      { text: 'My browser handles it before I even see it',        score: 3 },
+      { text: 'Accept all, I just want to get to the page',        score: 0, emoji: '🍪' },
+      { text: 'Sometimes decline the marketing ones',              score: 1, emoji: '🤏' },
+      { text: 'Always reject what I can',                          score: 2, emoji: '🚫' },
+      { text: 'My browser handles it before I even see it',        score: 3, emoji: '⚙️' },
     ]},
 ];
 
 export const recommendations: Recommendation[] = [
   {
-    id:          'msg-signal',
-    questionIdx: 0,
-    to:          2,
-    title:       'Switch to Signal',
-    desc:        'End-to-end encrypted by default, non-profit, and open source. Ask your closest contacts to join. Most are surprised how good it is. You can keep WhatsApp installed; Signal runs alongside it.',
-    action:      'Download Signal',
-    link:        'https://signal.org/download/',
-    effort:      1,
+    id:                'msg-signal',
+    questionIdx:       0,
+    to:                2,
+    title:             'Switch to Signal',
+    desc:              'End-to-end encrypted by default, non-profit, and open source. Ask your closest contacts to join. Most are surprised how good it is. You can keep WhatsApp installed; Signal runs alongside it.',
+    action:            'Download Signal',
+    link:              'https://signal.org/download/',
+    effort:            1,
+    excludeIfSelected: [2, 3], // already has Signal or niche app
+    sourceLabel:       'EFF: Surveillance Self-Defense',
+    sourceUrl:         'https://ssd.eff.org/module/how-use-signal-ios',
   },
   {
     id:          'browser-brave',
@@ -245,16 +251,21 @@ export const recommendations: Recommendation[] = [
     action:      'Download Brave',
     link:        'https://brave.com/download/',
     effort:      1,
+    sourceLabel: 'Trinity College Dublin: Browser Privacy Study',
+    sourceUrl:   'https://www.scss.tcd.ie/Doug.Leith/pubs/browser_privacy.pdf',
   },
   {
-    id:          'email-proton',
-    questionIdx: 1,
-    to:          2,
-    title:       'Move to Proton Mail',
-    desc:        "Swiss-based, end-to-end encrypted, and free to start. Create an account and migrate your subscriptions over time. You don't need to delete Gmail overnight.",
-    action:      'Create a Proton account',
-    link:        'https://proton.me/mail',
-    effort:      2,
+    id:                'email-proton',
+    questionIdx:       1,
+    to:                2,
+    title:             'Move to Proton Mail',
+    desc:              "Swiss-based, end-to-end encrypted, and free to start. Create an account and migrate your subscriptions over time. You don't need to delete Gmail overnight.",
+    action:            'Create a Proton account',
+    link:              'https://proton.me/mail',
+    effort:            2,
+    excludeIfSelected: [2, 3], // already has Proton or self-hosted email
+    sourceLabel:       'European Alternatives',
+    sourceUrl:         'https://european-alternatives.eu/category/email-providers',
   },
   {
     id:          'search-startpage',
@@ -265,6 +276,8 @@ export const recommendations: Recommendation[] = [
     action:      'Try Startpage',
     link:        'https://www.startpage.com/',
     effort:      1,
+    sourceLabel: 'European Alternatives',
+    sourceUrl:   'https://european-alternatives.eu/category/search-engines',
   },
   {
     id:          'maps-organic',
@@ -275,6 +288,8 @@ export const recommendations: Recommendation[] = [
     action:      'Get Organic Maps',
     link:        'https://organicmaps.app/',
     effort:      1,
+    sourceLabel: 'AP News: Google location tracking',
+    sourceUrl:   'https://apnews.com/article/north-america-science-technology-business-google-828aefab64d4411bac257a07c1af0ecb',
   },
   {
     id:          'cookies-com',
@@ -285,5 +300,7 @@ export const recommendations: Recommendation[] = [
     action:      'Install the extension',
     link:        'https://chromewebstore.google.com/detail/consent-o-matic/mdjildafknihdffpkfmmpnpoiajfjnjd',
     effort:      1,
+    sourceLabel: 'Matte et al. (2020): Do Cookie Banners Respect my Choice?',
+    sourceUrl:   'https://arxiv.org/abs/2001.02479',
   },
 ];

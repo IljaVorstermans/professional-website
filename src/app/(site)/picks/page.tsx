@@ -1,3 +1,10 @@
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'My Picks',
+  description: 'A curated list of videos, articles, newsletters, and ideas worth your time, selected by Ilja Vorstermans.',
+};
+
 const picks = [
   {
     tag: 'Newsletter',

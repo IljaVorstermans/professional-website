@@ -1,3 +1,10 @@
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Contact',
+  description: 'Get in touch with Ilja Vorstermans to discuss a project, collaboration, or question about digital autonomy and European tech independence.',
+};
+
 export default function ContactPage() {
   return (
     <div className="page-content">

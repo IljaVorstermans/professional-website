@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import { levels } from '@/app/quiz/data';
 
 export default function HomePage() {
   return (
@@ -9,11 +8,6 @@ export default function HomePage() {
         <div className="hero-inner">
           <span className="label">Digital Autonomy Quiz</span>
           <h1 className="landing-title">How&rsquo;s your relationship<br />with Big Tech?</h1>
-          <div className="level-chips">
-            {levels.map(lv => (
-              <span key={lv.title} className="level-chip">{lv.title}</span>
-            ))}
-          </div>
           <p className="landing-sub">
             Find out if you&rsquo;re in denial or close to finding new love in under two minutes.
             No account required.

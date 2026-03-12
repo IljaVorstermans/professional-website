@@ -9,7 +9,7 @@ export default function QuizLayout({ children }: { children: React.ReactNode }) 
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        minHeight: 'calc(100vh - 60px)',
+        minHeight: 'calc(100vh - 68px)',
         padding: '24px',
       }}>
         {children}

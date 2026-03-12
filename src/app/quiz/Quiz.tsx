@@ -52,11 +52,11 @@ function LandingScreen({ onStart, onDemo }: { onStart: () => void; onDemo: () =>
 
 function QuestionScreen({
   current, selectedIndices, disabled,
-  onToggleMulti, onPickSingle, onContinue, onBack,
+  onToggleMulti, onPickSingle, onContinue, onBack, onDemo,
 }: {
   current: number; selectedIndices: Set<number>; disabled: boolean;
   onToggleMulti: (i: number) => void; onPickSingle: (i: number) => void;
-  onContinue: () => void; onBack: () => void;
+  onContinue: () => void; onBack: () => void; onDemo: () => void;
 }) {
   const q           = questions[current];
   const progressPct = (current / questions.length) * 100;
@@ -92,10 +92,11 @@ function QuestionScreen({
                   <span className="check">
                     {sel && (
                       <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-                        <polyline points="1.5,5 4,7.5 8.5,2.5" stroke="#000" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                        <polyline points="1.5,5 4,7.5 8.5,2.5" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                       </svg>
                     )}
                   </span>
+                  {opt.emoji && <span className="opt-emoji">{opt.emoji}</span>}
                   <span>{opt.text}</span>
                 </button>
               );
@@ -106,7 +107,8 @@ function QuestionScreen({
                 className={`option${sel ? ' selected' : ''}${disabled ? ' disabled' : ''}`}
                 onClick={() => !disabled && onPickSingle(i)}
               >
-                {opt.text}
+                {opt.emoji && <span className="opt-emoji">{opt.emoji}</span>}
+                <span>{opt.text}</span>
               </button>
             );
           })}
@@ -118,6 +120,9 @@ function QuestionScreen({
         >
           Continue →
         </button>
+        {process.env.NODE_ENV === 'development' && (
+          <button className="btn-demo" onClick={onDemo}>Skip to result (random) →</button>
+        )}
       </div>
     </>
   );
@@ -244,6 +249,7 @@ export default function Quiz({ autoStart = false }: { autoStart?: boolean }) {
         onPickSingle={pickSingle}
         onContinue={advance}
         onBack={back}
+        onDemo={demoFill}
       />
     );
   }

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { questions, dims, pillars, levels, recommendations, type Accumulator } from './data';
+import { questions, dims, pillars, levels, recommendations, pillarDesc, type Accumulator } from './data';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -112,6 +112,14 @@ const EFFORT = ['', 'Low effort', 'Some effort', 'Significant effort'];
 const FILL_MAX_MS = 2160;
 const FILL_MIN_MS = 720;
 
+const BIG_TECH_IMPLICATION: Record<string, string> = {
+  Google:    'Combines your searches, location, emails, and browsing into a single profile used for ad targeting.',
+  Meta:      'Tracks you across millions of websites using their pixel, even on sites you never post on.',
+  Apple:     'Your photos, messages, and files are stored on US servers and subject to US law.',
+  Microsoft: 'Your emails and documents are processed on US infrastructure governed by US law.',
+  ByteDance: 'TikTok collects extensive device data and is subject to Chinese national security laws.',
+};
+
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export default function ResultScreen({
@@ -140,7 +148,11 @@ export default function ResultScreen({
   const betterThan    = betterThanPct(pct);
   const bigTech       = calcBigTech(questionSelections);
   const earnedBadges  = BADGES.filter(b => b.check(questionSelections));
-  const applicable    = recommendations.filter(r => questionScores[r.questionIdx] < r.to);
+  const applicable    = recommendations.filter(r => {
+    if (questionScores[r.questionIdx] >= r.to) return false;
+    if (r.excludeIfSelected?.some(idx => questionSelections[r.questionIdx]?.has(idx))) return false;
+    return true;
+  });
 
   // Level progression
   const levelIdx     = levels.findIndex(l => pct <= l.max);
@@ -153,7 +165,9 @@ export default function ResultScreen({
   const levelsToAnimate = levelTargets.map((f, i) => ({ i, f })).filter(x => x.f > 0);
 
   // Pillar filter
+  const [copied, setCopied] = useState(false);
   const [pillarFilter, setPillarFilter] = useState<string | null>(null);
+  const [activePillar, setActivePillar] = useState<string | null>(null);
   const filterablePillars = pillars.filter(p =>
     applicable.some(r => Object.keys(questions[r.questionIdx].pillars).includes(p))
   );
@@ -171,17 +185,45 @@ export default function ResultScreen({
   const ringRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   // Level-up overlay
-  const [ovShowing, setOvShowing]           = useState(false);
-  const [ovLevelIdx, setOvLevelIdx]         = useState(0);
-  const [ovBarWidth, setOvBarWidth]         = useState(0);
-  const [ovTransitionMs, setOvTransitionMs] = useState(0);
-  const [ovTextVisible, setOvTextVisible]   = useState(false);
-  const [ovButtonLabel, setOvButtonLabel]   = useState<string | null>(null);
+  const [ovShowing, setOvShowing]               = useState(false);
+  const [ovCurrentRank, setOvCurrentRank]       = useState(0);
+  const [ovRevealedBars, setOvRevealedBars]     = useState<number[]>([]);
+  const [ovBarFills, setOvBarFills]             = useState<Record<number, number>>({});
+  const [ovBarTransitions, setOvBarTransitions] = useState<Record<number, number>>({});
+  const [ovTextVisible, setOvTextVisible]       = useState(false);
+  const [ovButtonLabel, setOvButtonLabel]       = useState<string | null>(null);
   const ovNextCallback = useRef<(() => void) | null>(null);
   const ovAbortRef     = useRef(false);
 
+  function handleShare() {
+    const text = `I scored ${pct}% on the Digital Autonomy Quiz - "${level.title}". How does your Big Tech relationship compare?`;
+    const url  = typeof window !== 'undefined' ? `${window.location.origin}/quiz` : 'https://iljavorstermans.eu/quiz';
+    if (typeof navigator !== 'undefined' && navigator.share) {
+      navigator.share({ title: 'Digital Autonomy Quiz', text, url });
+    } else {
+      navigator.clipboard.writeText(url).then(() => {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2500);
+      });
+    }
+  }
+
   function triggerNextSteps() {
-    setStep(3);
+    // Step 1: score counter + bar
+    setStep(1);
+    setTimeout(() => setBarWidth(pct), 120);
+    const startTime = performance.now();
+    const animatePct = (now: number) => {
+      const t = Math.min((now - startTime) / 1200, 1);
+      setDisplayPct(Math.round((1 - Math.pow(1 - t, 3)) * pct));
+      if (t < 1) requestAnimationFrame(animatePct);
+    };
+    requestAnimationFrame(animatePct);
+    // Step 2: level title + progression stack
+    setTimeout(() => setStep(2), 1300);
+    // Step 3: summary cards + badges
+    setTimeout(() => setStep(3), 1800);
+    // Step 4: pillar donuts
     setTimeout(() => {
       setStep(4);
       const computed = Object.fromEntries(pillars.map(p => [p, pillarPctValues[p]]));
@@ -192,9 +234,11 @@ export default function ResultScreen({
           if (el) el.style.setProperty('--pct', String(computed[p]));
         }, idx * 160);
       });
-    }, 1000);
-    setTimeout(() => setStep(5), 2200);
-    setTimeout(() => setStep(6), 2500);
+    }, 2800);
+    // Step 5: topic breakdown + Big Tech
+    setTimeout(() => setStep(5), 4000);
+    // Step 6: recommendations + share
+    setTimeout(() => setStep(6), 4300);
   }
 
   function closeOverlay() {
@@ -209,11 +253,14 @@ export default function ResultScreen({
     const fillMs = Math.max(FILL_MIN_MS, Math.round((targetPct / 100) * FILL_MAX_MS));
     const isLast = rank === levelsToAnimate.length - 1;
 
-    setOvLevelIdx(lvIdx);
-    setOvBarWidth(0);
-    setOvTransitionMs(0);
+    setOvCurrentRank(rank);
     setOvTextVisible(false);
     setOvButtonLabel(null);
+
+    // Add this bar to the stack, starting at 0 width (guard against Strict Mode double-invoke)
+    setOvRevealedBars(prev => prev.includes(rank) ? prev : [...prev, rank]);
+    setOvBarFills(prev => ({ ...prev, [rank]: 0 }));
+    setOvBarTransitions(prev => ({ ...prev, [rank]: 0 }));
 
     setTimeout(() => {
       if (ovAbortRef.current) return;
@@ -221,19 +268,20 @@ export default function ResultScreen({
 
       setTimeout(() => {
         if (ovAbortRef.current) return;
-        setOvTransitionMs(fillMs);
-        setOvBarWidth(targetPct);
+        // Animate this bar filling up
+        setOvBarTransitions(prev => ({ ...prev, [rank]: fillMs }));
+        setOvBarFills(prev => ({ ...prev, [rank]: targetPct }));
 
         setTimeout(() => {
           if (ovAbortRef.current) return;
           if (isLast) {
             ovNextCallback.current = closeOverlay;
-            setOvButtonLabel('Continue →');
+            setOvButtonLabel('See my results →');
           } else {
             ovNextCallback.current = () => {
               setOvButtonLabel(null);
               setOvTextVisible(false);
-              setTimeout(() => animateLevel(rank + 1), 400);
+              setTimeout(() => animateLevel(rank + 1), 300);
             };
             setOvButtonLabel('Next →');
           }
@@ -243,28 +291,18 @@ export default function ResultScreen({
   }
 
   useEffect(() => {
-    // Step 1: score counter + bar
-    setStep(1);
-    setTimeout(() => setBarWidth(pct), 120);
+    if (!activePillar) return;
+    const close = () => setActivePillar(null);
+    document.addEventListener('click', close);
+    return () => document.removeEventListener('click', close);
+  }, [activePillar]);
 
-    const startTime = performance.now();
-    const animatePct = (now: number) => {
-      const t = Math.min((now - startTime) / 1200, 1);
-      setDisplayPct(Math.round((1 - Math.pow(1 - t, 3)) * pct));
-      if (t < 1) requestAnimationFrame(animatePct);
-    };
-    requestAnimationFrame(animatePct);
-
-    // Step 2: launch overlay
-    const t2 = setTimeout(() => {
-      setStep(2);
-      ovAbortRef.current = false;
-      setOvShowing(true);
-      animateLevel(0);
-    }, 1300);
-
+  useEffect(() => {
+    // Launch overlay immediately - score reveal happens after overlay is dismissed
+    ovAbortRef.current = false;
+    setOvShowing(true);
+    animateLevel(0);
     return () => {
-      clearTimeout(t2);
       ovAbortRef.current = true;
     };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -282,25 +320,51 @@ export default function ResultScreen({
       {ovShowing && (
         <div className="lv-overlay">
           <div className="lv-panel">
+
+            {/* Title and description - fades with each level */}
             <div className={`lv-content${ovTextVisible ? ' lv-content--visible' : ''}`}>
-              <div className="lv-counter">Level {ovLevelIdx + 1} of {levels.length}</div>
-              <div className="lv-title">{levels[ovLevelIdx].title}</div>
-              <div className="lv-desc">{levels[ovLevelIdx].desc}</div>
-              <div className="lv-bar-track">
-                <div
-                  className="lv-bar-fill"
-                  style={{
-                    width: ovBarWidth + '%',
-                    transition: ovTransitionMs > 0 ? `width ${ovTransitionMs}ms linear` : 'none',
-                  }}
-                />
+              <div className="lv-counter">
+                Level {(levelsToAnimate[ovCurrentRank]?.i ?? 0) + 1} of {levels.length}
               </div>
-              <div className="lv-ok-row" style={{ visibility: ovButtonLabel ? 'visible' : 'hidden' }}>
-                <button className="lv-ok-btn" onClick={() => ovNextCallback.current?.()}>
-                  {ovButtonLabel ?? 'Next →'}
-                </button>
+              <div className="lv-title">
+                {levels[levelsToAnimate[ovCurrentRank]?.i ?? 0]?.title}
+              </div>
+              <div className="lv-desc">
+                {levels[levelsToAnimate[ovCurrentRank]?.i ?? 0]?.desc}
               </div>
             </div>
+
+            {/* Stacked progress bars - one per level, accumulating */}
+            {ovRevealedBars.length > 0 && (
+              <div className="lv-bars-stack">
+                {ovRevealedBars.map(rank => (
+                  <div key={rank} className="lv-bar-row">
+                    <span className="lv-bar-label">
+                      {levels[levelsToAnimate[rank].i].title}
+                    </span>
+                    <div className="lv-bar-track">
+                      <div
+                        className="lv-bar-fill"
+                        style={{
+                          width: (ovBarFills[rank] ?? 0) + '%',
+                          transition: (ovBarTransitions[rank] ?? 0) > 0
+                            ? `width ${ovBarTransitions[rank]}ms linear`
+                            : 'none',
+                        }}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Button */}
+            <div className="lv-ok-row" style={{ visibility: ovButtonLabel ? 'visible' : 'hidden' }}>
+              <button className="lv-ok-btn" onClick={() => ovNextCallback.current?.()}>
+                {ovButtonLabel ?? 'Next →'}
+              </button>
+            </div>
+
           </div>
         </div>
       )}
@@ -379,7 +443,16 @@ export default function ResultScreen({
                   >
                     <span className="pillar-pct" style={{ color }}>{pp}%</span>
                   </div>
-                  <span className="pillar-label">{p}</span>
+                  <button
+                    className="pillar-label"
+                    onClick={e => { e.stopPropagation(); setActivePillar(activePillar === p ? null : p); }}
+                    aria-label={`What is ${p}?`}
+                  >{p}</button>
+                  {activePillar === p && (
+                    <div className="pillar-tooltip" onClick={e => e.stopPropagation()}>
+                      {pillarDesc[p]}
+                    </div>
+                  )}
                 </div>
               );
             })}
@@ -410,9 +483,14 @@ export default function ResultScreen({
               <div className="footprint-title">Your Big Tech footprint</div>
               <div className="footprint-items">
                 {bigTech.slice(0, 4).map(({ company, count }) => (
-                  <div key={company} className="footprint-item">
-                    <span className="footprint-company">{company}</span>
-                    <span className="footprint-count">{count} {count === 1 ? 'touchpoint' : 'touchpoints'}</span>
+                  <div key={company} className="footprint-item-block">
+                    <div className="footprint-item">
+                      <span className="footprint-company">{company}</span>
+                      <span className="footprint-count">{count} {count === 1 ? 'touchpoint' : 'touchpoints'}</span>
+                    </div>
+                    {BIG_TECH_IMPLICATION[company] && (
+                      <p className="footprint-implication">{BIG_TECH_IMPLICATION[company]}</p>
+                    )}
                   </div>
                 ))}
               </div>
@@ -461,9 +539,16 @@ export default function ResultScreen({
                         </div>
                       </div>
                       <p className="rec-card-desc">{r.desc}</p>
-                      <a className="rec-action" href={r.link} target="_blank" rel="noopener noreferrer">
-                        {r.action} →
-                      </a>
+                      <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 4 }}>
+                        <a className="rec-action" href={r.link} target="_blank" rel="noopener noreferrer">
+                          {r.action} →
+                        </a>
+                        {r.sourceUrl && (
+                          <a className="source-link" href={r.sourceUrl} target="_blank" rel="noopener noreferrer">
+                            · Source: {r.sourceLabel}
+                          </a>
+                        )}
+                      </div>
                       {Object.keys(gains).length > 0 && (
                         <div className="rec-pillars">
                           {Object.entries(gains).map(([p, g]) => (
@@ -485,6 +570,13 @@ export default function ResultScreen({
               <input className="email-input" type="email" placeholder="your@email.com" />
               <button className="btn-send">Send it</button>
             </div>
+          </div>
+
+          <div className="share-row">
+            <button className="btn-share" onClick={handleShare}>
+              {copied ? 'Link copied!' : 'Share your result →'}
+            </button>
+            <span className="share-hint">Challenge a friend to compare</span>
           </div>
 
           <div className="retake-row">

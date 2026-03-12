@@ -6,8 +6,11 @@ const inter = Inter({ subsets: ['latin'] });
 const spaceGrotesk = Space_Grotesk({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: "How's your relationship with Big Tech?",
-  description: 'Find out if you\'re in denial or close to finding new love in under two minutes. No account required.',
+  title: {
+    template: '%s | Ilja Vorstermans',
+    default: "How's your relationship with Big Tech?",
+  },
+  description: "Find out if you're in denial or close to finding new love in under two minutes. No account required.",
 };
 
 export default function RootLayout({

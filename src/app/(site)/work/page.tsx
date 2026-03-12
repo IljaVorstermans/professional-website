@@ -1,3 +1,10 @@
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Work',
+  description: 'A selection of projects by Ilja Vorstermans spanning GDPR-compliant data pipelines, AI tooling, financial analysis, and strategic consulting.',
+};
+
 const projects = [
   {
     tag: 'Data / AI',
