@@ -332,7 +332,7 @@ a { color: inherit; text-decoration: none; }
 .pillar-donut .pillar-tooltip--active { display: block; }
 
 /* ── Recommendations ── */
-.recs-wrapper { margin-bottom: 36px; }
+.recs-wrapper { margin-bottom: 0; }
 .recs-label {
     font-size: 11px; font-weight: 600; letter-spacing: 0.14em;
     text-transform: uppercase; color: var(--muted); margin-bottom: 14px;
@@ -444,14 +444,32 @@ a { color: inherit; text-decoration: none; }
     margin-bottom: 14px;
     box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
+/* Next moves - same styling as the Big Tech footprint card */
+.next-moves-band {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 18px 20px;
+    margin-bottom: 0;
+}
+.next-moves-band .rec-card {
+    background: #DBEAFE;
+    border-color: #93C5FD;
+}
+
 .footprint-title {
     font-size: 11px; font-weight: 600; letter-spacing: 0.12em;
     text-transform: uppercase; color: var(--muted); margin-bottom: 12px;
 }
-.footprint-items { display: flex; flex-direction: column; gap: 9px; }
+.footprint-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 12px;
+}
+.footprint-col-label { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); width: 80px; text-align: center; flex-shrink: 0; }
+.footprint-items { display: flex; flex-direction: column; gap: 0; }
 .footprint-item { display: flex; justify-content: space-between; align-items: center; }
 .footprint-company { font-size: 14px; font-weight: 600; color: var(--text); }
-.footprint-count { font-size: 12px; color: var(--muted); }
+.footprint-count { font-size: 42px; font-weight: 700; color: var(--text); line-height: 1; flex-shrink: 0; width: 80px; text-align: center; align-self: center; font-family: var(--font-heading); }
 
 /* Summary cards row (comparison + weakest) */
 .summary-row { display: flex; gap: 10px; margin-bottom: 14px; }
@@ -463,15 +481,101 @@ a { color: inherit; text-decoration: none; }
     padding: 16px 18px;
     box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
-.summary-card--weak { border-color: #EF4444; }
+.summary-card--weak { border-color: var(--border); }
 .summary-card-header {
-    font-size: 10px; font-weight: 600; letter-spacing: 0.1em;
-    text-transform: uppercase; color: var(--muted); margin-bottom: 6px;
+    display: inline-block;
+    font-size: 10px; font-weight: 700; letter-spacing: 0.08em;
+    text-transform: uppercase; margin-bottom: 8px;
+    padding: 2px 8px; border-radius: 99px; border: 1px solid;
 }
 .summary-value { font-family: var(--font-heading); font-size: 20px; font-weight: 700; color: var(--text); margin-bottom: 4px; line-height: 1.2; }
 .summary-label { font-size: 11px; color: var(--muted); line-height: 1.45; }
 
-/* Badges */
+/* Unified section label - used for all result section headers */
+.section-label {
+    font-size: 11px; font-weight: 600; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--muted); margin-bottom: 12px;
+}
+
+/* Badge toasts - fixed overlay, slide in from right */
+.badge-toasts-container {
+    position: fixed;
+    bottom: 28px;
+    right: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    z-index: 200;
+    pointer-events: none;
+}
+.badge-toast {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 12px 16px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+    transform: translateX(120%);
+    opacity: 0;
+    transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease;
+    min-width: 210px;
+}
+.badge-toast--visible {
+    transform: translateX(0);
+    opacity: 1;
+}
+.badge-toast-emoji { font-size: 22px; line-height: 1; }
+.badge-toast-title {
+    font-size: 10px; font-weight: 600; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--accent); margin-bottom: 2px;
+}
+.badge-toast-name { font-size: 13px; font-weight: 600; color: var(--text); }
+
+/* Badges - bottom scrollable row */
+.badges-bottom { margin: 28px 0 8px; }
+.badges-counter {
+    font-size: 11px; font-weight: 600; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--muted); margin-bottom: 10px;
+}
+.badges-carousel {
+    position: relative;
+}
+.badges-scroll-row {
+    display: flex;
+    gap: 7px;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+.badges-scroll-row::-webkit-scrollbar { display: none; }
+.badges-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 2;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    font-size: 18px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--text);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+    transition: box-shadow 0.15s;
+    font-family: var(--font-body);
+    padding: 0;
+}
+.badges-nav:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.18); }
+.badges-nav--left  { left: -14px; }
+.badges-nav--right { right: -14px; }
+
+/* Legacy - keep for backward compat */
 .badges-section { margin-bottom: 20px; }
 .badges-label {
     font-size: 11px; font-weight: 600; letter-spacing: 0.12em;
@@ -480,10 +584,11 @@ a { color: inherit; text-decoration: none; }
 .badges-row { display: flex; flex-wrap: wrap; gap: 7px; }
 .badge {
     font-size: 12px; font-weight: 600; padding: 5px 12px;
-    border-radius: 99px;
+    border-radius: 8px;
     background: rgba(5, 150, 105, 0.08);
     border: 1px solid rgba(5, 150, 105, 0.25);
     color: var(--accent);
+    white-space: nowrap;
 }
 .badge--locked {
     background: var(--surface);
@@ -496,10 +601,25 @@ a { color: inherit; text-decoration: none; }
 .next-level-nudge {
     font-size: 14px; color: var(--muted); background: var(--surface);
     border: 1px solid var(--border); border-radius: 10px;
-    padding: 14px 18px; margin-bottom: 20px; line-height: 1.6;
+    padding: 12px 16px; margin-bottom: 20px; line-height: 1.6;
     box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
 }
 .next-level-nudge strong { color: var(--text); }
+.btn-share-nudge {
+    font-family: var(--font-body);
+    font-size: 13px; font-weight: 600;
+    color: var(--accent);
+    background: none;
+    border: 1.5px solid var(--accent);
+    border-radius: 8px;
+    padding: 6px 14px;
+    cursor: pointer;
+    white-space: nowrap;
+    flex-shrink: 0;
+    transition: background 0.15s, color 0.15s;
+}
+.btn-share-nudge:hover { background: var(--accent); color: white; }
 
 /* Rec filter */
 .recs-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
@@ -554,11 +674,11 @@ a { color: inherit; text-decoration: none; }
 .rec-improvement { font-size: 11px; font-weight: 700; color: var(--score); white-space: nowrap; }
 .rec-pillars { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 14px; }
 .rec-pillar-tag {
-    font-size: 10px; font-weight: 600; padding: 2px 8px;
-    border-radius: 99px;
-    background: var(--accent-bg);
-    color: var(--accent);
-    border: 1px solid rgba(5, 150, 105, 0.2);
+    font-size: 11px; font-weight: 600; padding: 3px 10px;
+    border-radius: 8px;
+    background: #D1FAE5;
+    color: #047857;
+    border: 1px solid rgba(5, 150, 105, 0.35);
 }
 
 /* Rec navigation */
@@ -603,7 +723,17 @@ a { color: inherit; text-decoration: none; }
 .share-hint { font-size: 12px; color: var(--muted); }
 
 /* Big Tech implication */
-.footprint-item-block { display: flex; flex-direction: column; gap: 3px; }
+.footprint-item-block {
+    display: flex; flex-direction: row; align-items: flex-start; gap: 16px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+}
+.footprint-item-block:first-child { padding-top: 0; }
+.footprint-item-block:last-child { border-bottom: none; padding-bottom: 0; }
+.footprint-item-left {
+    flex: 1; min-width: 0;
+    display: flex; flex-direction: column; gap: 3px;
+}
 .footprint-implication { font-size: 11px; color: var(--muted); line-height: 1.5; }
 
 /* Source link - inline citation at end of rec description */

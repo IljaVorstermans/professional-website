@@ -120,6 +120,10 @@ const BIG_TECH_IMPLICATION: Record<string, string> = {
   ByteDance: 'TikTok collects extensive device data and is subject to Chinese national security laws.',
 };
 
+// ── Toast type ─────────────────────────────────────────────────────────────────
+
+interface Toast { id: string; emoji: string; label: string; visible: boolean; }
+
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export default function ResultScreen({
@@ -138,7 +142,8 @@ export default function ResultScreen({
   const total  = dims.reduce((s, d) => s + dimScores[d].score, 0);
   const maxTot = dims.reduce((s, d) => s + dimScores[d].max,   0);
   const pct    = Math.round((total / maxTot) * 100);
-  const level  = levels.find(l => pct <= l.max)!;
+  // Use < so boundary scores promote to the next level (e.g. 40% = "It's not me, it's you!")
+  const level  = levels.find(l => pct < l.max) ?? levels[levels.length - 1];
 
   // Precompute
   const pillarPctValues = Object.fromEntries(
@@ -174,13 +179,29 @@ export default function ResultScreen({
   const [filterOpen, setFilterOpen] = useState(false);
   const [activePillar, setActivePillar] = useState<string | null>(null);
   const [recIdx, setRecIdx] = useState(0);
-  const filterRef = useRef<HTMLDivElement>(null);
+  const filterRef   = useRef<HTMLDivElement>(null);
+  const badgesRef   = useRef<HTMLDivElement>(null);
+  const [badgesCanLeft,  setBadgesCanLeft]  = useState(false);
+  const [badgesCanRight, setBadgesCanRight] = useState(false);
+
+  function updateBadgeScroll() {
+    const el = badgesRef.current;
+    if (!el) return;
+    setBadgesCanLeft(el.scrollLeft > 1);
+    setBadgesCanRight(el.scrollLeft < el.scrollWidth - el.clientWidth - 1);
+  }
+  function scrollBadges(dir: 'left' | 'right') {
+    badgesRef.current?.scrollBy({ left: dir === 'right' ? 180 : -180, behavior: 'smooth' });
+  }
   const filterablePillars = pillars.filter(p =>
     applicable.some(r => Object.keys(questions[r.questionIdx].pillars).includes(p))
   );
   const filteredSortedRecs = pillarFilter
     ? sortedApplicable.filter(r => Object.keys(questions[r.questionIdx].pillars).includes(pillarFilter))
     : sortedApplicable;
+
+  // Badge toasts
+  const [toasts, setToasts] = useState<Toast[]>([]);
 
   // Main reveal animation
   const [step, setStep]             = useState(0);
@@ -204,7 +225,7 @@ export default function ResultScreen({
 
   function handleShare() {
     const text = `Just found out I'm "${level.title}" when it comes to Big Tech. Take the quiz - where do you land? 👀`;
-    const url  = typeof window !== 'undefined' ? `${window.location.origin}/quiz` : 'https://iljavorstermans.eu/quiz';
+    const url  = typeof window !== 'undefined' ? `${window.location.origin}/quiz` : 'https://autonomyscore.eu/quiz';
     if (typeof navigator !== 'undefined' && navigator.share) {
       navigator.share({ title: 'Digital Autonomy Quiz', text, url });
     } else {
@@ -226,13 +247,11 @@ export default function ResultScreen({
       if (t < 1) requestAnimationFrame(animatePct);
     };
     requestAnimationFrame(animatePct);
-    // Step 2: level title + progression stack
+    // Step 2: level title + nudge
     setTimeout(() => setStep(2), 1300);
-    // Step 3: summary cards + badges
-    setTimeout(() => setStep(3), 1800);
-    // Step 4: pillar donuts
+    // Step 3: pillar donuts - directly below the nudge
     setTimeout(() => {
-      setStep(4);
+      setStep(3);
       const computed = Object.fromEntries(pillars.map(p => [p, pillarPctValues[p]]));
       setPillarPcts(computed);
       pillars.forEach((p, idx) => {
@@ -241,11 +260,28 @@ export default function ResultScreen({
           if (el) el.style.setProperty('--pct', String(computed[p]));
         }, idx * 160);
       });
-    }, 2800);
+    }, 1800);
+    // Step 4: summary cards
+    setTimeout(() => setStep(4), 3000);
     // Step 5: topic breakdown + Big Tech
-    setTimeout(() => setStep(5), 4000);
-    // Step 6: recommendations + share
-    setTimeout(() => setStep(6), 4300);
+    setTimeout(() => setStep(5), 4200);
+    // Step 6: recommendations + badges row + share
+    setTimeout(() => setStep(6), 4500);
+    // Badge toasts: staggered after pillar donuts animate in
+    earnedBadges.forEach((badge, i) => {
+      const showAt = 2500 + i * 900;
+      const hideAt = showAt + 2200;
+      setTimeout(() => {
+        setToasts(prev => [...prev, { id: badge.id, emoji: badge.emoji, label: badge.label, visible: false }]);
+        setTimeout(() => {
+          setToasts(prev => prev.map(t => t.id === badge.id ? { ...t, visible: true } : t));
+        }, 50);
+      }, showAt);
+      setTimeout(() => {
+        setToasts(prev => prev.map(t => t.id === badge.id ? { ...t, visible: false } : t));
+        setTimeout(() => setToasts(prev => prev.filter(t => t.id !== badge.id)), 400);
+      }, hideAt);
+    });
   }
 
   function closeOverlay() {
@@ -275,7 +311,6 @@ export default function ResultScreen({
 
       setTimeout(() => {
         if (ovAbortRef.current) return;
-        // Animate this bar filling up
         setOvBarTransitions(prev => ({ ...prev, [rank]: fillMs }));
         setOvBarFills(prev => ({ ...prev, [rank]: targetPct }));
 
@@ -305,6 +340,7 @@ export default function ResultScreen({
   }, [activePillar]);
 
   useEffect(() => { setRecIdx(0); }, [pillarFilter]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { if (step >= 6) setTimeout(updateBadgeScroll, 50); }, [step]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (!filterOpen) return;
@@ -339,7 +375,6 @@ export default function ResultScreen({
         <div className="lv-overlay">
           <div className="lv-panel">
 
-            {/* Title and description - fades with each level */}
             <div className={`lv-content${ovTextVisible ? ' lv-content--visible' : ''}`}>
               <div className="lv-counter">
                 Level {(levelsToAnimate[ovCurrentRank]?.i ?? 0) + 1} of {levels.length}
@@ -352,7 +387,6 @@ export default function ResultScreen({
               </div>
             </div>
 
-            {/* Stacked progress bars - one per level, accumulating */}
             {ovRevealedBars.length > 0 && (
               <div className="lv-bars-stack">
                 {ovRevealedBars.map(rank => (
@@ -376,7 +410,6 @@ export default function ResultScreen({
               </div>
             )}
 
-            {/* Button */}
             <div className="lv-ok-row" style={{ visibility: ovButtonLabel ? 'visible' : 'hidden' }}>
               <button className="lv-ok-btn" onClick={() => ovNextCallback.current?.()}>
                 {ovButtonLabel ?? 'Next →'}
@@ -386,6 +419,19 @@ export default function ResultScreen({
           </div>
         </div>
       )}
+
+      {/* ── Badge toasts - fixed overlay, not blurred with the screen ── */}
+      <div className="badge-toasts-container">
+        {toasts.map(t => (
+          <div key={t.id} className={`badge-toast${t.visible ? ' badge-toast--visible' : ''}`}>
+            <span className="badge-toast-emoji">{t.emoji}</span>
+            <div>
+              <div className="badge-toast-title">Achievement unlocked</div>
+              <div className="badge-toast-name">{t.label}</div>
+            </div>
+          </div>
+        ))}
+      </div>
 
       <div className="progress-bar" style={{ width: '100%' }} />
       <div className="screen" style={ovShowing ? { filter: 'blur(8px)', opacity: 0.4, transition: 'filter 0.3s, opacity 0.3s', pointerEvents: 'none' } : { filter: 'none', opacity: 1, transition: 'filter 0.4s, opacity 0.4s' }}>
@@ -404,45 +450,19 @@ export default function ResultScreen({
         <div style={reveal(2)}>
           <div className="result-title">{level.title}</div>
           <div className="result-desc">{level.desc}</div>
-          {levelIdx < levels.length - 1 && (
+          {levelIdx !== -1 && levelIdx < levels.length - 1 && (
             <div className="next-level-nudge">
-              {levels[levelIdx].max - pct}% more to unlock <strong>{levels[levelIdx + 1].title}</strong>
+              <span>{levels[levelIdx].max - pct}% more to reach <strong>{levels[levelIdx + 1].title}</strong></span>
+              <button className="btn-share-nudge" onClick={handleShare}>
+                {copied ? 'Copied!' : 'Challenge a friend →'}
+              </button>
             </div>
           )}
         </div>
 
-        {/* ── Step 3: Summary cards + badges ── */}
+        {/* ── Step 3: Pillar donuts - directly below the nudge ── */}
         <div style={reveal(3)}>
-          <div className="summary-row">
-            <div className="summary-card">
-              <div className="summary-value">{betterThan}%</div>
-              <div className="summary-label">better than others who&apos;ve taken this quiz</div>
-            </div>
-            <div className="summary-card summary-card--weak">
-              <div className="summary-card-header">Weakest area</div>
-              <div className="summary-value">{weakestPillar}</div>
-              <div className="summary-label">{pillarPctValues[weakestPillar]}% score</div>
-            </div>
-          </div>
-
-          <div className="badges-section">
-            <div className="badges-label">Achievements</div>
-            <div className="badges-row">
-              {BADGES.map(b => {
-                const earned = b.check(questionSelections);
-                return (
-                  <span key={b.id} className={`badge${earned ? '' : ' badge--locked'}`}>
-                    {b.emoji} {b.label}
-                  </span>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-
-        {/* ── Step 4: Pillar donuts (staggered) ── */}
-        <div style={reveal(4)}>
-          <div className="result-label" style={{ marginBottom: 16 }}>Your freedom breakdown</div>
+          <div className="section-label" style={{ marginBottom: 16 }}>Your freedom breakdown</div>
           <div className="pillar-donuts">
             {pillars.map(p => {
               const pp    = pillarPcts[p] ?? 0;
@@ -478,6 +498,29 @@ export default function ResultScreen({
           </div>
         </div>
 
+        {/* ── Step 4: Summary cards ── */}
+        <div style={reveal(4)}>
+          <div className="summary-row">
+            {(() => {
+              const pctColor = betterThan >= 67 ? { bg: '#DCFCE7', text: '#16a34a', border: '#BBF7D0' }
+                             : betterThan >= 34 ? { bg: '#FEF3C7', text: '#d97706', border: '#FDE68A' }
+                             :                   { bg: '#FEE2E2', text: '#dc2626', border: '#FECACA' };
+              return (
+                <div className="summary-card">
+                  <div className="summary-card-header" style={{ background: pctColor.bg, color: pctColor.text, borderColor: pctColor.border }}>Your percentile</div>
+                  <div className="summary-value" style={{ color: pctColor.text }}>{betterThan}%</div>
+                  <div className="summary-label">of quiz-takers scored lower</div>
+                </div>
+              );
+            })()}
+            <div className="summary-card summary-card--weak">
+              <div className="summary-card-header" style={{ background: '#FEE2E2', color: '#dc2626', borderColor: '#FECACA' }}>Weakest area</div>
+              <div className="summary-value">{weakestPillar}</div>
+              <div className="summary-label">{pillarPctValues[weakestPillar]}% score</div>
+            </div>
+          </div>
+        </div>
+
         {/* ── Step 5: Topic breakdown + Big Tech footprint ── */}
         <div style={reveal(5)}>
           <div className="breakdown">
@@ -499,17 +542,23 @@ export default function ResultScreen({
 
           {bigTech.length > 0 && (
             <div className="footprint-card">
-              <div className="footprint-title">Your Big Tech footprint</div>
+              <div className="footprint-header">
+                <div className="section-label" style={{ margin: 0 }}>Your Big Tech footprint</div>
+                <span className="footprint-col-label">Touchpoints</span>
+              </div>
               <div className="footprint-items">
                 {bigTech.slice(0, 4).map(({ company, count }) => (
                   <div key={company} className="footprint-item-block">
-                    <div className="footprint-item">
+                    <div className="footprint-item-left">
                       <span className="footprint-company">{company}</span>
-                      <span className="footprint-count">{count} {count === 1 ? 'touchpoint' : 'touchpoints'}</span>
+                      {BIG_TECH_IMPLICATION[company] && (
+                        <p className="footprint-implication">{BIG_TECH_IMPLICATION[company]}</p>
+                      )}
                     </div>
-                    {BIG_TECH_IMPLICATION[company] && (
-                      <p className="footprint-implication">{BIG_TECH_IMPLICATION[company]}</p>
-                    )}
+                    <span
+                      className="footprint-count"
+                      style={{ color: count >= 4 ? '#EF4444' : count >= 2 ? '#F59E0B' : '#78716C' }}
+                    >{count}</span>
                   </div>
                 ))}
               </div>
@@ -517,9 +566,11 @@ export default function ResultScreen({
           )}
         </div>
 
-        {/* ── Step 6: Recommendations + share + retake ── */}
+        {/* ── Step 6: Recommendations (green band) + badges row + share + retake ── */}
         <div style={reveal(6)}>
-          <div className="recs-wrapper">
+
+          {/* Green tinted band wrapping the recommendations section */}
+          <div className="next-moves-band">
             {filteredSortedRecs.length === 0 ? (
               <p style={{ fontSize: 14, color: 'var(--muted)' }}>
                 You&apos;ve already made the key moves. Impressive.
@@ -527,7 +578,7 @@ export default function ResultScreen({
             ) : (
               <>
                 <div className="recs-header">
-                  <div className="recs-label">Your next moves</div>
+                  <div className="section-label" style={{ margin: 0 }}>Your next moves</div>
                   {filterablePillars.length > 1 && (
                     <div className="rec-filter" ref={filterRef}>
                       <button
@@ -610,12 +661,30 @@ export default function ResultScreen({
             )}
           </div>
 
-          <div className="share-row">
-            <button className="btn-share" onClick={handleShare}>
-              {copied ? 'Copied!' : 'Share your score →'}
-            </button>
-            <span className="share-hint">Challenge a friend to see where they land</span>
-          </div>
+          {/* Badges row - only earned, Netflix-style carousel */}
+          {earnedBadges.length > 0 && (
+            <div className="badges-bottom">
+              <div className="badges-counter">
+                {earnedBadges.length} of {BADGES.length} achievements unlocked
+              </div>
+              <div className="badges-carousel">
+                {badgesCanLeft && (
+                  <button className="badges-nav badges-nav--left" onClick={() => scrollBadges('left')}>‹</button>
+                )}
+                <div className="badges-scroll-row" ref={badgesRef} onScroll={updateBadgeScroll}>
+                  {earnedBadges.map(b => (
+                    <span key={b.id} className="badge">
+                      {b.emoji} {b.label}
+                    </span>
+                  ))}
+                </div>
+                {badgesCanRight && (
+                  <button className="badges-nav badges-nav--right" onClick={() => scrollBadges('right')}>›</button>
+                )}
+              </div>
+            </div>
+          )}
+
 
           <div className="retake-row">
             <span className="retake-hint">Made a change? Come back and see how much you&apos;ve improved.</span>

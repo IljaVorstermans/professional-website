@@ -23,6 +23,9 @@ This is a **professional portfolio website** for Ilja Vorstermans that doubles a
 - Friends + social comparison
 - iOS/Android app (React Native, same Supabase backend)
 
+### Pages with outstanding content work
+- **My choices** (`/choices`): Nav item exists but is commented out in `Nav.tsx` pending content. The concept is "here is what I actually use" - tools and services that reflect the digital autonomy mission (e.g. Proton Mail, Signal, Infomaniak). Should feel like practicing what you preach, not a generic tools list. Rename or replace the current `/picks` page when ready.
+
 ---
 
 ## Communication style
@@ -77,7 +80,7 @@ Decided 2026-03-08:
 |------------|------------------|----------------------------------------------------|
 | Framework  | Next.js 16 (App Router) | TypeScript, `src/` directory layout         |
 | Backend/DB | Supabase         | Auth, PostgreSQL, real-time. Not yet integrated.   |
-| Hosting    | Vercel           | Connected to GitHub repo. Not yet set up.          |
+| Hosting    | Vercel           | Live. Domains: iljavorstermans.eu, autonomyscore.eu (registered at Infomaniak). |
 
 ### Rationale
 - Next.js chosen for native Vercel integration and future-proofing for user accounts + social features.
