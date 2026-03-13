@@ -79,7 +79,7 @@ export const questions: Question[] = [
     opts: [
       { text: 'Gmail',                                             score: 0 },
       { text: 'Outlook',                                           score: 1 },
-      { text: 'Proton Mail or another privacy-focused provider',   score: 2 },
+      { text: 'Proton Mail, Tutanota, or similar',                  score: 2 },
       { text: 'I host my own email',                               score: 3 },
     ]},
 
@@ -117,7 +117,7 @@ export const questions: Question[] = [
     text: 'How do you manage your passwords?',
     pillars: { Privacy: 0.25, Security: 1.0, Independence: 0.5, Transparency: 1.0 },
     opts: [
-      { text: 'My browser remembers them, or I reuse the same ones', score: 0, emoji: '🌐' },
+      { text: "I don't use a dedicated password manager",            score: 0, emoji: '🌐' },
       { text: 'A commercial password manager (1Password, LastPass)', score: 1, emoji: '🔑' },
       { text: 'Bitwarden or another open-source manager',            score: 2, emoji: '🛡️' },
       { text: 'I host my own password vault',                        score: 3, emoji: '🏠' },
@@ -127,9 +127,9 @@ export const questions: Question[] = [
     text: 'When you see "Sign in with Google / Apple / Facebook", you...',
     pillars: { Privacy: 0.5, Security: 1.0, Independence: 1.0, Sovereignty: 0.25 },
     opts: [
-      { text: "Use it, it's so much easier",                       score: 0 },
+      { text: "Use it - it's convenient",                          score: 0 },
       { text: 'Use it for throwaway accounts',                     score: 1 },
-      { text: 'Avoid it but sometimes give in',                    score: 2 },
+      { text: 'Avoid it, but not always',                          score: 2 },
       { text: 'Never, always a separate account',                  score: 3 },
     ]},
 
@@ -205,7 +205,7 @@ export const questions: Question[] = [
     ]},
 
   { dim: 'Online Presence', multi: true,
-    text: 'Which social platforms are you active on?',
+    text: 'Which of these do you have an active account on?',
     pillars: { Privacy: 1.0, Independence: 1.0, Sovereignty: 1.0, Transparency: 0.5 },
     opts: [
       { text: 'Facebook',                                          score: 0, emoji: '👤' },
@@ -214,7 +214,7 @@ export const questions: Question[] = [
       { text: 'YouTube',                                           score: 0, emoji: '▶️' },
       { text: 'X (Twitter) or LinkedIn',                           score: 1, emoji: '🐦' },
       { text: 'BlueSky or Mastodon',                               score: 2, emoji: '🦋' },
-      { text: "None, I've stepped back",                           score: 3, emoji: '✌️' },
+      { text: 'None of the above',                                  score: 3, emoji: '✌️' },
     ]},
 
   { dim: 'Online Presence', multi: false,

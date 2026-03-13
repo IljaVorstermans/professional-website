@@ -159,7 +159,7 @@ export default function ResultScreen({
   );
 
   // Level progression
-  const levelIdx     = levels.findIndex(l => pct <= l.max);
+  const levelIdx     = levels.findIndex(l => pct < l.max);
   const levelTargets = levels.map((lv, i) => {
     const prevMax = i === 0 ? 0 : levels[i - 1].max;
     if (pct >= lv.max) return 100;
