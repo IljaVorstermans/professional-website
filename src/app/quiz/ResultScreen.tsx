@@ -98,14 +98,14 @@ function calcBigTech(qs: Set<number>[]): BigTechEntry[] {
 }
 
 const BADGES = [
-  { id: 'signal',  label: 'Signal Convert',   check: (qs: Set<number>[]) => qs[0]?.has(2)  || qs[0]?.has(3)  },
-  { id: 'proton',  label: 'Encrypted Inbox',  check: (qs: Set<number>[]) => qs[1]?.has(2)  || qs[1]?.has(3)  },
-  { id: 'vault',   label: 'Vault Keeper',     check: (qs: Set<number>[]) => qs[5]?.has(2)  || qs[5]?.has(3)  },
-  { id: 'cookie',  label: 'Cookie Slayer',    check: (qs: Set<number>[]) => qs[15]?.has(3)                   },
-  { id: 'maps',    label: 'Off the Map',      check: (qs: Set<number>[]) => qs[10]?.has(2) || qs[10]?.has(3) },
-  { id: 'social',  label: 'Social Minimalist',check: (qs: Set<number>[]) => qs[14]?.has(6)                   },
-  { id: 'linux',   label: 'Linux User',       check: (qs: Set<number>[]) => qs[8]?.has(3)                    },
-  { id: 'browser', label: 'Privacy Browser',  check: (qs: Set<number>[]) => qs[9]?.has(2)  || qs[9]?.has(3)  },
+  { id: 'signal',  emoji: '🔒', label: 'Signal Convert',    check: (qs: Set<number>[]) => qs[0]?.has(2)  || qs[0]?.has(3)  },
+  { id: 'proton',  emoji: '📧', label: 'Encrypted Inbox',   check: (qs: Set<number>[]) => qs[1]?.has(2)  || qs[1]?.has(3)  },
+  { id: 'vault',   emoji: '🔑', label: 'Vault Keeper',      check: (qs: Set<number>[]) => qs[5]?.has(2)  || qs[5]?.has(3)  },
+  { id: 'cookie',  emoji: '🚫', label: 'Cookie Slayer',     check: (qs: Set<number>[]) => qs[15]?.has(3)                   },
+  { id: 'maps',    emoji: '🗺️', label: 'Off the Map',       check: (qs: Set<number>[]) => qs[10]?.has(2) || qs[10]?.has(3) },
+  { id: 'social',  emoji: '✌️', label: 'Social Minimalist', check: (qs: Set<number>[]) => qs[14]?.has(6)                   },
+  { id: 'linux',   emoji: '🐧', label: 'Linux User',        check: (qs: Set<number>[]) => qs[8]?.has(3)                    },
+  { id: 'browser', emoji: '🦊', label: 'Privacy Browser',   check: (qs: Set<number>[]) => qs[9]?.has(2)  || qs[9]?.has(3)  },
 ] as const;
 
 const EFFORT = ['', 'Low effort', 'Some effort', 'Significant effort'];
@@ -153,6 +153,10 @@ export default function ResultScreen({
     if (r.excludeIfSelected?.some(idx => questionSelections[r.questionIdx]?.has(idx))) return false;
     return true;
   });
+  const sortedApplicable = [...applicable].sort(
+    (a, b) => calcImprovementPct(b.questionIdx, questionScores, dimScores)
+            - calcImprovementPct(a.questionIdx, questionScores, dimScores)
+  );
 
   // Level progression
   const levelIdx     = levels.findIndex(l => pct <= l.max);
@@ -164,16 +168,19 @@ export default function ResultScreen({
   });
   const levelsToAnimate = levelTargets.map((f, i) => ({ i, f })).filter(x => x.f > 0);
 
-  // Pillar filter
+  // Pillar filter + rec navigation
   const [copied, setCopied] = useState(false);
   const [pillarFilter, setPillarFilter] = useState<string | null>(null);
+  const [filterOpen, setFilterOpen] = useState(false);
   const [activePillar, setActivePillar] = useState<string | null>(null);
+  const [recIdx, setRecIdx] = useState(0);
+  const filterRef = useRef<HTMLDivElement>(null);
   const filterablePillars = pillars.filter(p =>
     applicable.some(r => Object.keys(questions[r.questionIdx].pillars).includes(p))
   );
-  const filteredRecs = pillarFilter
-    ? applicable.filter(r => Object.keys(questions[r.questionIdx].pillars).includes(pillarFilter))
-    : applicable;
+  const filteredSortedRecs = pillarFilter
+    ? sortedApplicable.filter(r => Object.keys(questions[r.questionIdx].pillars).includes(pillarFilter))
+    : sortedApplicable;
 
   // Main reveal animation
   const [step, setStep]             = useState(0);
@@ -196,7 +203,7 @@ export default function ResultScreen({
   const ovAbortRef     = useRef(false);
 
   function handleShare() {
-    const text = `I scored ${pct}% on the Digital Autonomy Quiz - "${level.title}". How does your Big Tech relationship compare?`;
+    const text = `Just found out I'm "${level.title}" when it comes to Big Tech. Take the quiz - where do you land? 👀`;
     const url  = typeof window !== 'undefined' ? `${window.location.origin}/quiz` : 'https://iljavorstermans.eu/quiz';
     if (typeof navigator !== 'undefined' && navigator.share) {
       navigator.share({ title: 'Digital Autonomy Quiz', text, url });
@@ -297,6 +304,17 @@ export default function ResultScreen({
     return () => document.removeEventListener('click', close);
   }, [activePillar]);
 
+  useEffect(() => { setRecIdx(0); }, [pillarFilter]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (!filterOpen) return;
+    const close = (e: MouseEvent) => {
+      if (filterRef.current && !filterRef.current.contains(e.target as Node)) setFilterOpen(false);
+    };
+    document.addEventListener('mousedown', close);
+    return () => document.removeEventListener('mousedown', close);
+  }, [filterOpen]);
+
   useEffect(() => {
     // Launch overlay immediately - score reveal happens after overlay is dismissed
     ovAbortRef.current = false;
@@ -382,24 +400,15 @@ export default function ResultScreen({
           </div>
         </div>
 
-        {/* ── Step 2: Level title + description + progression stack ── */}
+        {/* ── Step 2: Level title + description + next level nudge ── */}
         <div style={reveal(2)}>
           <div className="result-title">{level.title}</div>
           <div className="result-desc">{level.desc}</div>
-          <div className="level-stack">
-            {levels.map((lv, i) => {
-              const status = i < levelIdx ? 'done' : i === levelIdx ? 'current' : 'future';
-              const title  = i <= levelIdx ? lv.title : '• • • • •';
-              return (
-                <div key={lv.title} className={`level-row level-row--${status}`}>
-                  <span className="level-row-title">{title}</span>
-                  <div className="level-bar-track">
-                    <div className="level-bar-fill" style={{ width: levelTargets[i] + '%' }} />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+          {levelIdx < levels.length - 1 && (
+            <div className="next-level-nudge">
+              {levels[levelIdx].max - pct}% more to unlock <strong>{levels[levelIdx + 1].title}</strong>
+            </div>
+          )}
         </div>
 
         {/* ── Step 3: Summary cards + badges ── */}
@@ -416,26 +425,35 @@ export default function ResultScreen({
             </div>
           </div>
 
-          {earnedBadges.length > 0 && (
-            <div className="badges-section">
-              <div className="badges-label">Achievements unlocked</div>
-              <div className="badges-row">
-                {earnedBadges.map(b => (
-                  <span key={b.id} className="badge">{b.label}</span>
-                ))}
-              </div>
+          <div className="badges-section">
+            <div className="badges-label">Achievements</div>
+            <div className="badges-row">
+              {BADGES.map(b => {
+                const earned = b.check(questionSelections);
+                return (
+                  <span key={b.id} className={`badge${earned ? '' : ' badge--locked'}`}>
+                    {b.emoji} {b.label}
+                  </span>
+                );
+              })}
             </div>
-          )}
+          </div>
         </div>
 
         {/* ── Step 4: Pillar donuts (staggered) ── */}
         <div style={reveal(4)}>
+          <div className="result-label" style={{ marginBottom: 16 }}>Your freedom breakdown</div>
           <div className="pillar-donuts">
             {pillars.map(p => {
               const pp    = pillarPcts[p] ?? 0;
               const color = pillarColor(pp);
               return (
-                <div key={p} className="pillar-donut">
+                <div
+                  key={p}
+                  className="pillar-donut"
+                  onMouseEnter={() => setActivePillar(p)}
+                  onMouseLeave={() => setActivePillar(null)}
+                >
                   <div
                     className="pillar-ring"
                     ref={el => { ringRefs.current[p] = el; }}
@@ -448,11 +466,12 @@ export default function ResultScreen({
                     onClick={e => { e.stopPropagation(); setActivePillar(activePillar === p ? null : p); }}
                     aria-label={`What is ${p}?`}
                   >{p}</button>
-                  {activePillar === p && (
-                    <div className="pillar-tooltip" onClick={e => e.stopPropagation()}>
-                      {pillarDesc[p]}
-                    </div>
-                  )}
+                  <div
+                    className={`pillar-tooltip${activePillar === p ? ' pillar-tooltip--active' : ''}`}
+                    onClick={e => e.stopPropagation()}
+                  >
+                    {pillarDesc[p]}
+                  </div>
                 </div>
               );
             })}
@@ -498,10 +517,10 @@ export default function ResultScreen({
           )}
         </div>
 
-        {/* ── Step 6: Recommendations + email + retake ── */}
+        {/* ── Step 6: Recommendations + share + retake ── */}
         <div style={reveal(6)}>
           <div className="recs-wrapper">
-            {applicable.length === 0 ? (
+            {filteredSortedRecs.length === 0 ? (
               <p style={{ fontSize: 14, color: 'var(--muted)' }}>
                 You&apos;ve already made the key moves. Impressive.
               </p>
@@ -510,27 +529,41 @@ export default function ResultScreen({
                 <div className="recs-header">
                   <div className="recs-label">Your next moves</div>
                   {filterablePillars.length > 1 && (
-                    <div className="filter-pills">
+                    <div className="rec-filter" ref={filterRef}>
                       <button
-                        className={`filter-pill${!pillarFilter ? ' active' : ''}`}
-                        onClick={() => setPillarFilter(null)}
-                      >All</button>
-                      {filterablePillars.map(p => (
-                        <button
-                          key={p}
-                          className={`filter-pill${pillarFilter === p ? ' active' : ''}`}
-                          onClick={() => setPillarFilter(pillarFilter === p ? null : p)}
-                        >{p}</button>
-                      ))}
+                        className={`rec-filter-btn${filterOpen ? ' open' : ''}`}
+                        onClick={() => setFilterOpen(o => !o)}
+                      >
+                        {pillarFilter ?? 'All areas'}
+                        <svg width="10" height="6" viewBox="0 0 10 6" fill="none" style={{ flexShrink: 0, transition: 'transform 0.15s', transform: filterOpen ? 'rotate(180deg)' : 'none' }}>
+                          <path d="M1 1l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                      </button>
+                      {filterOpen && (
+                        <div className="rec-filter-menu">
+                          <button
+                            className={`rec-filter-item${!pillarFilter ? ' active' : ''}`}
+                            onClick={() => { setPillarFilter(null); setFilterOpen(false); }}
+                          >All areas</button>
+                          {filterablePillars.map(p => (
+                            <button
+                              key={p}
+                              className={`rec-filter-item${pillarFilter === p ? ' active' : ''}`}
+                              onClick={() => { setPillarFilter(p); setFilterOpen(false); }}
+                            >{p}</button>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
 
-                {filteredRecs.map(r => {
+                {(() => {
+                  const r = filteredSortedRecs[Math.min(recIdx, filteredSortedRecs.length - 1)];
                   const improvement = calcImprovementPct(r.questionIdx, questionScores, dimScores);
                   const gains       = calcPillarGains(r.questionIdx, questionScores, pillarScores);
                   return (
-                    <div key={r.id} className="rec-card">
+                    <div className="rec-card">
                       <div className="rec-card-top">
                         <span className="rec-card-title">{r.title}</span>
                         <div className="rec-card-meta">
@@ -538,17 +571,15 @@ export default function ResultScreen({
                           <span className="rec-effort">{EFFORT[r.effort]}</span>
                         </div>
                       </div>
-                      <p className="rec-card-desc">{r.desc}</p>
-                      <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 4 }}>
-                        <a className="rec-action" href={r.link} target="_blank" rel="noopener noreferrer">
-                          {r.action} →
-                        </a>
+                      <p className="rec-card-desc">
+                        {r.desc}
                         {r.sourceUrl && (
-                          <a className="source-link" href={r.sourceUrl} target="_blank" rel="noopener noreferrer">
-                            · Source: {r.sourceLabel}
-                          </a>
+                          <> · <a className="source-link" href={r.sourceUrl} target="_blank" rel="noopener noreferrer">{r.sourceLabel}</a></>
                         )}
-                      </div>
+                      </p>
+                      <a className="rec-action" href={r.link} target="_blank" rel="noopener noreferrer">
+                        {r.action} →
+                      </a>
                       {Object.keys(gains).length > 0 && (
                         <div className="rec-pillars">
                           {Object.entries(gains).map(([p, g]) => (
@@ -558,25 +589,32 @@ export default function ResultScreen({
                       )}
                     </div>
                   );
-                })}
+                })()}
+
+                {filteredSortedRecs.length > 1 && (
+                  <div className="rec-nav">
+                    <button
+                      className="rec-nav-btn"
+                      onClick={() => setRecIdx(i => Math.max(0, i - 1))}
+                      disabled={recIdx === 0}
+                    >← Prev</button>
+                    <span className="rec-nav-count">{recIdx + 1} of {filteredSortedRecs.length}</span>
+                    <button
+                      className="rec-nav-btn"
+                      onClick={() => setRecIdx(i => Math.min(filteredSortedRecs.length - 1, i + 1))}
+                      disabled={recIdx === filteredSortedRecs.length - 1}
+                    >Next →</button>
+                  </div>
+                )}
               </>
             )}
           </div>
 
-          <div className="email-box">
-            <div className="email-box-title">Get your personalised roadmap</div>
-            <div className="email-box-sub">We&apos;ll send you specific next steps based on your answers.</div>
-            <div className="email-row">
-              <input className="email-input" type="email" placeholder="your@email.com" />
-              <button className="btn-send">Send it</button>
-            </div>
-          </div>
-
           <div className="share-row">
             <button className="btn-share" onClick={handleShare}>
-              {copied ? 'Link copied!' : 'Share your result →'}
+              {copied ? 'Copied!' : 'Share your score →'}
             </button>
-            <span className="share-hint">Challenge a friend to compare</span>
+            <span className="share-hint">Challenge a friend to see where they land</span>
           </div>
 
           <div className="retake-row">
