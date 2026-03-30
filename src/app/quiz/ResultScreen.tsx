@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { questions, dims, pillars, levels, recommendations, pillarDesc, type Accumulator } from './data';
-import SaveScore from '@/components/SaveScore';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -686,12 +685,6 @@ export default function ResultScreen({
             </div>
           )}
 
-
-          <SaveScore
-            score={pct}
-            pillarScores={pillarScores}
-            dimScores={dimScores}
-          />
 
           <div className="retake-row">
             <span className="retake-hint">Made a change? Come back and see how much you&apos;ve improved.</span>
