@@ -4,8 +4,8 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 const links = [
-  { href: '/about',   label: 'About'   },
-  { href: '/work',    label: 'Work'    },
+  // { href: '/about',   label: 'About'   }, // commented out - restore when ready
+  // { href: '/work',    label: 'Work'    },  // commented out - restore when ready
   // { href: '/choices', label: 'My choices' }, // commented out - needs content before publishing
   { href: '/contact', label: 'Contact' },
 ];
